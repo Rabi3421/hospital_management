@@ -1,0 +1,192 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import Icon from "@/components/ui/AppIcon";
+
+const navLinks = [
+    { label: "Home", href: "/homepage" },
+    { label: "Services", href: "/services" },
+    { label: "About Us", href: "/about" },
+    { label: "Our Doctors", href: "/doctors" },
+    { label: "Appointments", href: "/appointments" },
+    { label: "Contact", href: "/contact" },
+];
+
+export default function PageNavBar() {
+    const [scrolled, setScrolled] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
+    const pathname = usePathname();
+
+    useEffect(() => {
+        const handleScroll = () => setScrolled(window.scrollY > 40);
+        window.addEventListener("scroll", handleScroll, { passive: true });
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
+    return (
+        <>
+            <nav
+                className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled
+                        ? "bg-white/95 backdrop-blur-md shadow-card border-b border-cream-dark"
+                        : "bg-navy/95 backdrop-blur-md"
+                    }`}
+            >
+                <div className="max-w-7xl mx-auto px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-20">
+                        {/* Logo */}
+                        <Link href="/homepage" className="flex items-center gap-3 group">
+                            <div
+                                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${scrolled ? "bg-navy" : "bg-white/15 backdrop-blur-sm"
+                                    }`}
+                            >
+                                <svg
+                                    width="22"
+                                    height="22"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    className="text-gold"
+                                >
+                                    <path
+                                        d="M12 2C9.5 2 7.5 3.5 6.5 5.5C5.5 3.5 3.5 2 3 2C1.5 2 0 3.5 0 5.5C0 9 3 12 6.5 16C7.5 17.5 9 19.5 12 22C15 19.5 16.5 17.5 17.5 16C21 12 24 9 24 5.5C24 3.5 22.5 2 21 2C20.5 2 18.5 3.5 17.5 5.5C16.5 3.5 14.5 2 12 2Z"
+                                        fill="currentColor"
+                                    />
+                                </svg>
+                            </div>
+                            <div>
+                                <span
+                                    className={`font-display font-semibold text-lg leading-none tracking-tight ${scrolled ? "text-navy" : "text-white"
+                                        }`}
+                                >
+                                    DentalCare
+                                </span>
+                                <span className="block text-[10px] tracking-[0.18em] uppercase text-gold font-sans font-medium mt-0.5">
+                                    Advanced Dentistry
+                                </span>
+                            </div>
+                        </Link>
+
+                        {/* Desktop Links */}
+                        <div className="hidden lg:flex items-center gap-7">
+                            {navLinks.map((link) => (
+                                <Link
+                                    key={link.label}
+                                    href={link.href}
+                                    className={`nav-link text-sm font-medium transition-colors duration-200 ${pathname === link.href
+                                            ? "text-gold"
+                                            : scrolled
+                                                ? "text-navy-600 hover:text-navy"
+                                                : "text-white/85 hover:text-white"
+                                        }`}
+                                >
+                                    {link.label}
+                                </Link>
+                            ))}
+                        </div>
+
+                        {/* CTA */}
+                        <div className="hidden lg:flex items-center gap-3">
+                            <a
+                                href="tel:+12125550190"
+                                className={`flex items-center gap-2 text-sm font-medium transition-colors ${scrolled ? "text-navy" : "text-white/90 hover:text-white"
+                                    }`}
+                            >
+                                <Icon
+                                    name="PhoneIcon"
+                                    size={16}
+                                    variant="solid"
+                                    className="text-gold"
+                                />
+                                (212) 555-0190
+                            </a>
+                            <Link
+                                href="/appointments"
+                                className="btn-gold px-5 py-2.5 rounded-full text-sm font-semibold shadow-gold"
+                            >
+                                <span>Book Appointment</span>
+                            </Link>
+                        </div>
+
+                        {/* Mobile Toggle */}
+                        <button
+                            onClick={() => setMobileOpen(!mobileOpen)}
+                            className={`lg:hidden p-2 rounded-lg transition-colors ${scrolled
+                                    ? "text-navy hover:bg-cream"
+                                    : "text-white hover:bg-white/10"
+                                }`}
+                            aria-label="Toggle menu"
+                        >
+                            <Icon name={mobileOpen ? "XMarkIcon" : "Bars3Icon"} size={24} />
+                        </button>
+                    </div>
+                </div>
+            </nav>
+
+            {/* Mobile Menu */}
+            <div
+                className={`fixed inset-0 z-40 lg:hidden transition-all duration-400 ${mobileOpen
+                        ? "opacity-100 pointer-events-auto"
+                        : "opacity-0 pointer-events-none"
+                    }`}
+            >
+                <div
+                    className="absolute inset-0 bg-navy/60 backdrop-blur-sm"
+                    onClick={() => setMobileOpen(false)}
+                />
+                <div
+                    className={`mobile-menu absolute top-0 right-0 h-full w-72 bg-white shadow-xl-navy flex flex-col ${mobileOpen ? "open" : ""
+                        }`}
+                >
+                    <div className="flex items-center justify-between p-6 border-b border-cream-dark">
+                        <span className="font-display font-semibold text-navy text-lg">
+                            Menu
+                        </span>
+                        <button
+                            onClick={() => setMobileOpen(false)}
+                            className="p-2 rounded-lg hover:bg-cream text-navy"
+                        >
+                            <Icon name="XMarkIcon" size={20} />
+                        </button>
+                    </div>
+                    <nav className="flex-1 p-6 space-y-1 overflow-y-auto">
+                        {navLinks.map((link) => (
+                            <Link
+                                key={link.label}
+                                href={link.href}
+                                onClick={() => setMobileOpen(false)}
+                                className={`block px-4 py-3 rounded-xl font-medium transition-colors ${pathname === link.href
+                                        ? "bg-cream text-gold"
+                                        : "text-navy hover:bg-cream"
+                                    }`}
+                            >
+                                {link.label}
+                            </Link>
+                        ))}
+                    </nav>
+                    <div className="p-6 border-t border-cream-dark space-y-3">
+                        <a
+                            href="tel:+12125550190"
+                            className="flex items-center gap-2 text-sm text-navy font-medium"
+                        >
+                            <Icon
+                                name="PhoneIcon"
+                                size={16}
+                                variant="solid"
+                                className="text-gold"
+                            />
+                            (212) 555-0190
+                        </a>
+                        <Link
+                            href="/appointments"
+                            onClick={() => setMobileOpen(false)}
+                            className="block w-full btn-gold py-3 rounded-full text-sm font-semibold shadow-gold text-center"
+                        >
+                            <span>Book Appointment</span>
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+}

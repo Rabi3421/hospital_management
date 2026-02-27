@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import Icon from "@/components/ui/AppIcon";
 
 export default function Footer() {
@@ -73,18 +74,12 @@ export default function Footer() {
                 "Emergency Care",
               ]?.map((s) => (
                 <li key={s}>
-                  <button
-                    onClick={() => {
-                      const el = document.querySelector("#services");
-                      if (el) {
-                        const top = el?.getBoundingClientRect()?.top + window.scrollY - 80;
-                        window.scrollTo({ top, behavior: "smooth" });
-                      }
-                    }}
-                    className="text-white/50 hover:text-gold text-sm transition-colors text-left"
+                  <Link
+                    href="/services"
+                    className="text-white/50 hover:text-gold text-sm transition-colors"
                   >
                     {s}
-                  </button>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -95,26 +90,19 @@ export default function Footer() {
             <h4 className="text-white font-semibold text-sm mb-5">Quick Links</h4>
             <ul className="space-y-3">
               {[
-                { label: "About Us", href: "#about" },
-                { label: "Our Doctors", href: "#team" },
-                { label: "Testimonials", href: "#testimonials" },
-                { label: "FAQ", href: "#faq" },
-                { label: "Contact", href: "#contact" },
-                { label: "Book Appointment", href: "#contact" },
+                { label: "About Us", href: "/about" },
+                { label: "Our Doctors", href: "/doctors" },
+                { label: "Services", href: "/services" },
+                { label: "Contact", href: "/contact" },
+                { label: "Book Appointment", href: "/appointments" },
               ]?.map((link) => (
                 <li key={link?.label}>
-                  <button
-                    onClick={() => {
-                      const el = document.querySelector(link?.href);
-                      if (el) {
-                        const top = el?.getBoundingClientRect()?.top + window.scrollY - 80;
-                        window.scrollTo({ top, behavior: "smooth" });
-                      }
-                    }}
-                    className="text-white/50 hover:text-gold text-sm transition-colors text-left"
+                  <Link
+                    href={link?.href}
+                    className="text-white/50 hover:text-gold text-sm transition-colors"
                   >
                     {link?.label}
-                  </button>
+                  </Link>
                 </li>
               ))}
             </ul>

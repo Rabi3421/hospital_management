@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
-
+import Link from "next/link";
 import Icon from "@/components/ui/AppIcon";
 
+// page: true → navigates to a new page; page: false → smooth-scrolls on homepage
 const navLinks = [
-  { label: "Services", href: "#services" },
-  { label: "About Us", href: "#about" },
-  { label: "Our Doctors", href: "#team" },
-  { label: "Testimonials", href: "#testimonials" },
-  { label: "FAQ", href: "#faq" },
-  { label: "Contact", href: "#contact" },
+  { label: "Services", href: "/services", page: true },
+  { label: "About Us", href: "/about", page: true },
+  { label: "Our Doctors", href: "/doctors", page: true },
+  { label: "Testimonials", href: "#testimonials", page: false },
+  { label: "FAQ", href: "#faq", page: false },
+  { label: "Contact", href: "/contact", page: true },
 ];
 
 export default function NavBar() {
@@ -37,20 +37,18 @@ export default function NavBar() {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled
             ? "bg-white/95 backdrop-blur-md shadow-card border-b border-cream-dark"
             : "bg-transparent"
-        }`}
+          }`}
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <div className="flex items-center gap-3">
               <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                  scrolled ? "bg-navy" : "bg-white/15 backdrop-blur-sm"
-                }`}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center ${scrolled ? "bg-navy" : "bg-white/15 backdrop-blur-sm"
+                  }`}
               >
                 <svg
                   width="22"
@@ -67,16 +65,14 @@ export default function NavBar() {
               </div>
               <div>
                 <span
-                  className={`font-display font-semibold text-lg leading-none tracking-tight ${
-                    scrolled ? "text-navy" : "text-white"
-                  }`}
+                  className={`font-display font-semibold text-lg leading-none tracking-tight ${scrolled ? "text-navy" : "text-white"
+                    }`}
                 >
                   DentalCare
                 </span>
                 <span
-                  className={`block text-[10px] tracking-[0.18em] uppercase font-sans font-medium ${
-                    scrolled ? "text-gold" : "text-gold-light"
-                  }`}
+                  className={`block text-[10px] tracking-[0.18em] uppercase font-sans font-medium ${scrolled ? "text-gold" : "text-gold-light"
+                    }`}
                 >
                   Advanced Dentistry
                 </span>
@@ -85,45 +81,56 @@ export default function NavBar() {
 
             {/* Desktop Links */}
             <div className="hidden lg:flex items-center gap-8">
-              {navLinks.map((link) => (
-                <button
-                  key={link.label}
-                  onClick={() => handleNavClick(link.href)}
-                  className={`nav-link text-sm font-medium transition-colors duration-200 ${
-                    scrolled
-                      ? "text-navy-600 hover:text-navy" :"text-white/85 hover:text-white"
-                  }`}
-                >
-                  {link.label}
-                </button>
-              ))}
+              {navLinks.map((link) =>
+                link.page ? (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    className={`nav-link text-sm font-medium transition-colors duration-200 ${scrolled
+                        ? "text-navy-600 hover:text-navy"
+                        : "text-white/85 hover:text-white"
+                      }`}
+                  >
+                    {link.label}
+                  </Link>
+                ) : (
+                  <button
+                    key={link.label}
+                    onClick={() => handleNavClick(link.href)}
+                    className={`nav-link text-sm font-medium transition-colors duration-200 ${scrolled
+                        ? "text-navy-600 hover:text-navy"
+                        : "text-white/85 hover:text-white"
+                      }`}
+                  >
+                    {link.label}
+                  </button>
+                )
+              )}
             </div>
 
             {/* CTA */}
             <div className="hidden lg:flex items-center gap-3">
               <a
                 href="tel:+12125550190"
-                className={`flex items-center gap-2 text-sm font-medium transition-colors ${
-                  scrolled ? "text-navy" : "text-white/90 hover:text-white"
-                }`}
+                className={`flex items-center gap-2 text-sm font-medium transition-colors ${scrolled ? "text-navy" : "text-white/90 hover:text-white"
+                  }`}
               >
                 <Icon name="PhoneIcon" size={16} variant="solid" className={scrolled ? "text-gold" : "text-gold-light"} />
                 (212) 555-0190
               </a>
-              <button
-                onClick={() => handleNavClick("#contact")}
+              <Link
+                href="/appointments"
                 className="btn-gold px-5 py-2.5 rounded-full text-sm font-semibold shadow-gold"
               >
                 <span>Book Appointment</span>
-              </button>
+              </Link>
             </div>
 
             {/* Mobile Toggle */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className={`lg:hidden p-2 rounded-lg transition-colors ${
-                scrolled ? "text-navy hover:bg-cream" : "text-white hover:bg-white/10"
-              }`}
+              className={`lg:hidden p-2 rounded-lg transition-colors ${scrolled ? "text-navy hover:bg-cream" : "text-white hover:bg-white/10"
+                }`}
               aria-label="Toggle menu"
             >
               <Icon name={mobileOpen ? "XMarkIcon" : "Bars3Icon"} size={24} />
@@ -134,18 +141,16 @@ export default function NavBar() {
 
       {/* Mobile Menu */}
       <div
-        className={`fixed inset-0 z-40 lg:hidden transition-all duration-400 ${
-          mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 z-40 lg:hidden transition-all duration-400 ${mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
       >
         <div
           className="absolute inset-0 bg-navy/60 backdrop-blur-sm"
           onClick={() => setMobileOpen(false)}
         />
         <div
-          className={`mobile-menu absolute top-0 right-0 h-full w-72 bg-white shadow-xl-navy flex flex-col ${
-            mobileOpen ? "open" : ""
-          }`}
+          className={`mobile-menu absolute top-0 right-0 h-full w-72 bg-white shadow-xl-navy flex flex-col ${mobileOpen ? "open" : ""
+            }`}
         >
           <div className="flex items-center justify-between p-6 border-b border-cream-dark">
             <span className="font-display font-semibold text-navy text-lg">Menu</span>
@@ -157,15 +162,26 @@ export default function NavBar() {
             </button>
           </div>
           <nav className="flex-1 p-6 space-y-1">
-            {navLinks.map((link) => (
-              <button
-                key={link.label}
-                onClick={() => handleNavClick(link.href)}
-                className="w-full text-left px-4 py-3 rounded-xl text-navy font-medium hover:bg-cream transition-colors"
-              >
-                {link.label}
-              </button>
-            ))}
+            {navLinks.map((link) =>
+              link.page ? (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="block px-4 py-3 rounded-xl text-navy font-medium hover:bg-cream transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <button
+                  key={link.label}
+                  onClick={() => handleNavClick(link.href)}
+                  className="w-full text-left px-4 py-3 rounded-xl text-navy font-medium hover:bg-cream transition-colors"
+                >
+                  {link.label}
+                </button>
+              )
+            )}
           </nav>
           <div className="p-6 border-t border-cream-dark space-y-3">
             <a
@@ -175,12 +191,13 @@ export default function NavBar() {
               <Icon name="PhoneIcon" size={16} variant="solid" className="text-gold" />
               (212) 555-0190
             </a>
-            <button
-              onClick={() => handleNavClick("#contact")}
-              className="w-full btn-gold py-3 rounded-full text-sm font-semibold shadow-gold"
+            <Link
+              href="/appointments"
+              onClick={() => setMobileOpen(false)}
+              className="block w-full btn-gold py-3 rounded-full text-sm font-semibold shadow-gold text-center"
             >
               <span>Book Appointment</span>
-            </button>
+            </Link>
           </div>
         </div>
       </div>
