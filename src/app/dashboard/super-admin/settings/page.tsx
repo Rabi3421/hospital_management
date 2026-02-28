@@ -70,12 +70,12 @@ export default function SystemSettingsPage() {
                 <div className="flex flex-col lg:flex-row gap-6">
                     {/* Side nav */}
                     <nav className="lg:w-48 flex-shrink-0">
-                        <div className="glass-card rounded-2xl p-2 flex lg:flex-col gap-1 overflow-x-auto">
+                        <div className="glass-card rounded-2xl p-2 flex lg:flex-col gap-1 overflow-x-auto scrollbar-hide">
                             {TABS.map(({ key, label }) => (
                                 <button
                                     key={key}
                                     onClick={() => setTab(key)}
-                                    className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${tab === key ? "bg-navy text-white" : "text-navy/50 hover:text-navy hover:bg-navy/5"}`}
+                                    className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 ${tab === key ? "bg-navy text-white" : "text-navy/50 hover:text-navy hover:bg-navy/5"}`}
                                 >
                                     {label}
                                 </button>

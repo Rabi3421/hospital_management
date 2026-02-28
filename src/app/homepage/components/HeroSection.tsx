@@ -7,7 +7,7 @@ import Icon from "@/components/ui/AppIcon";
 const floatingCards = [
 {
   id: "rating",
-  className: "absolute top-[18%] right-[6%] animate-float z-20",
+  className: "absolute top-[18%] right-[6%] animate-float z-20 hidden sm:block",
   content:
   <div className="glass-card rounded-2xl px-4 py-3 shadow-gold flex items-center gap-3 min-w-[180px]">
         <div className="w-10 h-10 bg-gold/15 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -24,7 +24,7 @@ const floatingCards = [
 },
 {
   id: "patients",
-  className: "absolute bottom-[28%] right-[8%] animate-float-2 z-20",
+  className: "absolute bottom-[28%] right-[8%] animate-float-2 z-20 hidden sm:block",
   content:
   <div className="glass-card rounded-2xl px-4 py-3 shadow-card flex items-center gap-3 min-w-[200px]">
         <div className="w-10 h-10 bg-navy/10 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -98,8 +98,8 @@ export default function HeroSection() {
       <div className="absolute inset-0 dot-pattern opacity-30 z-[1]" />
 
       {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-28 pb-20 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-16 sm:pb-20 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Left Content */}
           <div className="lg:col-span-7">
             {/* Badge */}
@@ -116,7 +116,7 @@ export default function HeroSection() {
             {/* Heading */}
             <h1
               ref={headingRef}
-              className="font-display text-5xl md:text-6xl lg:text-7xl text-white font-semibold leading-[1.05] tracking-tight mb-6">
+              className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white font-semibold leading-[1.05] tracking-tight mb-5 sm:mb-6">
               
               Your Smile
               <br />
@@ -129,7 +129,7 @@ export default function HeroSection() {
 
             {/* Subheadline */}
             <p
-              className="text-white/75 text-lg md:text-xl font-light leading-relaxed max-w-xl mb-10 animate-fade-in"
+              className="text-white/75 text-base sm:text-lg md:text-xl font-light leading-relaxed max-w-xl mb-8 sm:mb-10 animate-fade-in"
               style={{ animationDelay: "0.4s", opacity: 0 }}>
               
               Manhattan's premier dental hospital — combining cutting-edge technology
@@ -171,7 +171,7 @@ export default function HeroSection() {
 
             {/* Trust Indicators */}
             <div
-              className="flex flex-wrap items-center gap-6 animate-fade-in"
+              className="flex flex-wrap items-center gap-3 sm:gap-6 animate-fade-in"
               style={{ animationDelay: "0.7s", opacity: 0 }}>
               
               {[
@@ -187,73 +187,96 @@ export default function HeroSection() {
             </div>
           </div>
 
-          {/* Right — Booking Card */}
+          {/* Right — Why Choose Us Card */}
           <div className="lg:col-span-5 hidden lg:block">
             <div className="glass-card rounded-3xl p-7 shadow-xl-navy animate-scale-in" style={{ animationDelay: "0.3s", opacity: 0 }}>
+              {/* Header */}
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-navy rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-navy rounded-xl flex items-center justify-center flex-shrink-0">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" strokeWidth="2">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                    <line x1="16" y1="2" x2="16" y2="6" />
-                    <line x1="8" y1="2" x2="8" y2="6" />
-                    <line x1="3" y1="10" x2="21" y2="10" />
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   </svg>
                 </div>
                 <div>
-                  <p className="text-navy font-semibold text-sm">Quick Appointment</p>
-                  <p className="text-navy/50 text-xs">Responses within 2 hours</p>
+                  <p className="text-navy font-semibold text-sm">Why Choose Us</p>
+                  <p className="text-navy/50 text-xs">Trusted by thousands of patients</p>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-navy/60 uppercase tracking-wider mb-1.5">
-                    Your Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Sarah Johnson"
-                    className="w-full px-4 py-3 bg-cream rounded-xl border border-cream-dark form-input text-navy text-sm font-medium placeholder:text-navy/30" />
-                  
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-navy/60 uppercase tracking-wider mb-1.5">
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    placeholder="(212) 000-0000"
-                    className="w-full px-4 py-3 bg-cream rounded-xl border border-cream-dark form-input text-navy text-sm font-medium placeholder:text-navy/30" />
-                  
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-navy/60 uppercase tracking-wider mb-1.5">
-                    Service Needed
-                  </label>
-                  <select className="w-full px-4 py-3 bg-cream rounded-xl border border-cream-dark form-input text-navy text-sm font-medium appearance-none">
-                    <option value="">Select a service</option>
-                    <option>General Checkup & Cleaning</option>
-                    <option>Teeth Whitening</option>
-                    <option>Dental Implants</option>
-                    <option>Orthodontics / Invisalign</option>
-                    <option>Root Canal Treatment</option>
-                    <option>Cosmetic Dentistry</option>
-                    <option>Emergency Dental Care</option>
-                  </select>
-                </div>
-                <button
-                  className="w-full btn-primary py-4 rounded-xl font-semibold text-sm mt-2"
-                  onClick={() => {
-                    // Mock submit handler — connect to backend API here
-                    alert("Appointment request submitted! We'll contact you within 2 hours.");
-                  }}>
-                  
-                  <span>Request Appointment →</span>
-                </button>
-                <p className="text-center text-xs text-navy/40 font-medium">
-                  Free first consultation · No credit card required
-                </p>
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                {[
+                  { value: "15,000+", label: "Patients Treated", icon: (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" strokeWidth="2">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                      <circle cx="9" cy="7" r="4" />
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                  )},
+                  { value: "18 Years", label: "Of Excellence", icon: (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" strokeWidth="2">
+                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                    </svg>
+                  )},
+                  { value: "50+", label: "Specialist Doctors", icon: (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" strokeWidth="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  )},
+                  { value: "4.9 / 5.0", label: "Patient Rating", icon: (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#C9A96E">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                  )},
+                ].map((stat) => (
+                  <div key={stat.label} className="bg-cream rounded-2xl p-4 flex flex-col gap-2">
+                    <div className="w-8 h-8 bg-gold/15 rounded-lg flex items-center justify-center">
+                      {stat.icon}
+                    </div>
+                    <p className="text-navy font-bold text-lg leading-none">{stat.value}</p>
+                    <p className="text-navy/55 text-xs font-medium">{stat.label}</p>
+                  </div>
+                ))}
               </div>
+
+              {/* Feature List */}
+              <div className="space-y-3 mb-6">
+                {[
+                  "Board-certified specialists in every department",
+                  "State-of-the-art diagnostic & treatment equipment",
+                  "24/7 emergency care, always available",
+                  "All major insurance plans accepted",
+                ].map((item) => (
+                  <div key={item} className="flex items-start gap-2.5">
+                    <div className="w-5 h-5 rounded-full bg-gold/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" strokeWidth="3">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </div>
+                    <span className="text-navy/70 text-sm font-medium leading-snug">{item}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Bottom CTA */}
+              <button
+                onClick={() => {
+                  const el = document.querySelector("#services");
+                  if (el) {
+                    const top = el.getBoundingClientRect().top + window.scrollY - 80;
+                    window.scrollTo({ top, behavior: "smooth" });
+                  }
+                }}
+                className="w-full btn-primary py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 group">
+                <span>Explore Our Services</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:translate-x-1 transition-transform">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </button>
             </div>
           </div>
         </div>

@@ -11,18 +11,17 @@ import {
     REFRESH_COOKIE,
 } from "@/lib/jwt";
 import { apiError } from "@/lib/api-auth";
-import type { Role } from "@/types/auth";
+import type { Role } from "@/types/auth"; // still used for assignedRole typing
 
 export async function POST(request: NextRequest) {
     try {
         await connectDB();
 
         const body = await request.json();
-        const { name, email, password, role } = body as {
+        const { name, email, password } = body as {
             name?: string;
             email?: string;
             password?: string;
-            role?: Role;
         };
 
         // --- Validate input ---
@@ -40,10 +39,8 @@ export async function POST(request: NextRequest) {
             return apiError("Password must be at least 8 characters", 400);
         }
 
-        // super_admin role cannot be self-registered
-        const allowedRoles: Role[] = ["user", "admin"];
-        const assignedRole: Role =
-            role && allowedRoles.includes(role) ? role : "user";
+        // Public registration is always "user" — admins are created by super_admin only
+        const assignedRole: Role = "user";
 
         // --- Check duplicate ---
         const existing = await User.findOne({ email: email.toLowerCase() });

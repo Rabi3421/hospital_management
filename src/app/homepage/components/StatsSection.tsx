@@ -104,7 +104,7 @@ export default function StatsSection() {
   }, []);
 
   return (
-    <section id="about" className="bg-navy py-24 lg:py-32 relative overflow-hidden">
+    <section id="about" className="bg-navy py-16 sm:py-24 lg:py-32 relative overflow-hidden">
       {/* Background pattern */}
       <div className="absolute inset-0 cross-pattern opacity-40" />
       {/* Gold glow */}
@@ -113,13 +113,13 @@ export default function StatsSection() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
         {/* Stats Row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-20 pb-20 border-b border-white/10">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-16 sm:mb-20 pb-16 sm:pb-20 border-b border-white/10">
           {stats.map((stat, i) => (
             <div key={stat.label} className="text-center">
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gold/15 mb-4">
                 <Icon name={stat.icon as any} size={22} variant="solid" className="text-gold" />
               </div>
-              <div className="font-display text-4xl md:text-5xl font-semibold text-white mb-2 leading-none">
+              <div className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold text-white mb-2 leading-none">
                 <AnimatedCounter value={stat.value} suffix={stat.suffix} />
               </div>
               <p className="text-white/50 text-sm font-medium tracking-wide">{stat.label}</p>
@@ -132,7 +132,7 @@ export default function StatsSection() {
           <span className="inline-block text-xs font-semibold tracking-[0.2em] uppercase text-gold mb-4">
             Why Choose Us
           </span>
-          <h2 className="font-display text-4xl md:text-5xl font-semibold text-white tracking-tight leading-[1.1]">
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold text-white tracking-tight leading-[1.1]">
             Advanced Technology,
             <br />
             <em className="font-light italic text-gold-light">Compassionate Hands.</em>

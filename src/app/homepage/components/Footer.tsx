@@ -9,8 +9,8 @@ export default function Footer() {
   return (
     <footer className="bg-navy border-t border-white/10">
       {/* Main footer */}
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 sm:gap-10">
           {/* Brand */}
           <div className="lg:col-span-4">
             <div className="flex items-center gap-3 mb-5">
@@ -154,7 +154,7 @@ export default function Footer() {
       </div>
       {/* Bottom bar — Pattern 1: Linear Single-Row */}
       <div className="border-t border-white/10 py-5">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
           <p className="text-white/30 text-sm">
             © {year} DentalCare Advanced Dentistry. All rights reserved.
           </p>

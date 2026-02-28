@@ -114,7 +114,7 @@ export default function ContactSection() {
             <span className="inline-block text-xs font-semibold tracking-[0.2em] uppercase text-gold mb-4">
               Book an Appointment
             </span>
-            <h2 className="font-display text-4xl md:text-5xl font-semibold text-navy tracking-tight leading-[1.1] mb-6">
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold text-navy tracking-tight leading-[1.1] mb-6">
               Begin Your
               <br />
               <em className="font-light italic text-navy/60">Smile Journey.</em>
@@ -170,7 +170,7 @@ export default function ContactSection() {
 
           {/* Right Form */}
           <div ref={formRef} className="lg:col-span-7">
-            <div className="bg-white rounded-4xl p-8 md:p-10 border border-cream-dark shadow-xl-navy">
+            <div className="bg-white rounded-4xl p-6 sm:p-8 md:p-10 border border-cream-dark shadow-xl-navy">
               {submitted ? (
                 <div className="text-center py-12">
                   <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -218,7 +218,7 @@ export default function ContactSection() {
                   </div>
 
                   {/* Name row */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-navy/50 uppercase tracking-wider mb-1.5">
                         First Name *
@@ -248,7 +248,7 @@ export default function ContactSection() {
                   </div>
 
                   {/* Contact row */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-navy/50 uppercase tracking-wider mb-1.5">
                         Email *
@@ -278,7 +278,7 @@ export default function ContactSection() {
                   </div>
 
                   {/* Service & Time */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-navy/50 uppercase tracking-wider mb-1.5">
                         Service Needed
