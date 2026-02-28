@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import connectDB from "@/lib/mongodb";
 import Appointment from "@/models/Appointment";
+import AppointmentSlot from "@/models/AppointmentSlot";
 import { verifyAccessToken, ACCESS_COOKIE } from "@/lib/jwt";
+import mongoose from "mongoose";
 
 const PUBLIC_API_KEY = process.env.PUBLIC_API_KEY;
 
@@ -16,9 +18,9 @@ function apiSuccess<T>(data: T, status = 200) {
 }
 
 // ─── POST /api/appointments ───────────────────────────────
-// Open to guests (no auth required) — protected by x-api-key only.
-// If the request also carries a valid JWT the appointment is immediately
-// linked to that user so no claim step is needed later.
+// Slot-based auto-confirmed booking.
+// If slotId is provided: atomically increments bookedCount and assigns queueNumber.
+// If no slotId: falls back to legacy pending flow (for emergency/walk-in).
 export async function POST(req: NextRequest) {
     // 1. Validate public API key
     const providedKey = req.headers.get("x-api-key");
@@ -34,7 +36,7 @@ export async function POST(req: NextRequest) {
         return apiError("Invalid JSON body.", 400);
     }
 
-    // 3. Parse fields with proper types
+    // 3. Parse fields
     const firstName = String(body.firstName ?? "").trim();
     const lastName = String(body.lastName ?? "").trim();
     const phone = String(body.phone ?? "").trim();
@@ -46,13 +48,14 @@ export async function POST(req: NextRequest) {
     const isNewPatient = body.isNewPatient !== false;
     const insuranceProvider = String(body.insuranceProvider ?? "").trim();
     const notes = String(body.notes ?? "").trim();
+    const slotId = body.slotId ? String(body.slotId) : null;
 
     // 4. Basic validation
     if (!firstName || !lastName || !phone || !email || !service || !preferredDate || !preferredTime) {
         return apiError("Missing required fields.", 422);
     }
 
-    // 4. Try to get logged-in user from JWT (optional)
+    // 5. Try to get logged-in user from JWT (optional)
     let userId: string | null = null;
     const token =
         req.cookies.get(ACCESS_COOKIE)?.value ||
@@ -62,15 +65,46 @@ export async function POST(req: NextRequest) {
         if (payload) userId = payload.userId;
     }
 
-    // 5. Generate a guest token (used later for claiming)
+    // 6. Generate a guest token
     const guestToken = crypto.randomBytes(32).toString("hex");
 
-    // 6. Save appointment
+    // 7. Save appointment with atomic slot booking
     try {
         await connectDB();
     } catch {
         return apiError("Database connection failed. Please try again shortly.", 503);
     }
+
+    let queueNumber: number | null = null;
+    let resolvedSlotId: mongoose.Types.ObjectId | null = null;
+
+    if (slotId && mongoose.isValidObjectId(slotId)) {
+        // Atomic slot booking: increment bookedCount only if still open and not full
+        const slot = await AppointmentSlot.findOneAndUpdate(
+            {
+                _id: slotId,
+                status: "open",
+                $expr: { $lt: ["$bookedCount", "$capacity"] },
+            },
+            {
+                $inc: { bookedCount: 1, nextQueueNumber: 1 },
+            },
+            { new: false } // return doc BEFORE increment to get current nextQueueNumber
+        );
+
+        if (!slot) {
+            return apiError("This time slot is no longer available. Please choose another.", 409);
+        }
+
+        queueNumber = slot.nextQueueNumber; // value BEFORE increment = assigned number
+        resolvedSlotId = slot._id;
+
+        // If now full, update status
+        if (slot.bookedCount + 1 >= slot.capacity) {
+            await AppointmentSlot.findByIdAndUpdate(slotId, { status: "full" });
+        }
+    }
+
     const doc = await Appointment.create({
         firstName,
         lastName,
@@ -83,7 +117,11 @@ export async function POST(req: NextRequest) {
         isNewPatient,
         insuranceProvider,
         notes,
-        userId: userId ? new (await import("mongoose")).default.Types.ObjectId(userId) : undefined,
+        ...(resolvedSlotId ? { slotId: resolvedSlotId } : {}),
+        ...(queueNumber !== null ? { queueNumber } : {}),
+        // Auto-confirm if slot was booked; otherwise pending (legacy/walk-in)
+        status: resolvedSlotId ? "confirmed" : "pending",
+        userId: userId ? new mongoose.Types.ObjectId(userId) : undefined,
         guestToken,
         claimed: !!userId,
     });
@@ -93,6 +131,10 @@ export async function POST(req: NextRequest) {
             appointmentId: String(doc._id),
             guestToken,
             linked: !!userId,
+            confirmed: !!resolvedSlotId,
+            queueNumber,
+            slotTime: preferredTime,
+            date: preferredDate,
         },
         201
     );

@@ -22,7 +22,13 @@ export interface IAppointment extends Document {
     insuranceProvider?: string;
     notes?: string;
 
-    // Status
+    // Slot-based booking
+    /** Reference to the AppointmentSlot this booking occupies */
+    slotId?: mongoose.Types.ObjectId;
+    /** Queue number assigned at booking time (e.g. #3 for this time slot) */
+    queueNumber?: number;
+
+    // Status — defaults to "confirmed" (auto-confirmed on slot booking)
     status: AppointmentStatus;
 
     // Linking logic
@@ -56,10 +62,12 @@ const AppointmentSchema = new Schema<IAppointment>(
         isNewPatient: { type: Boolean, default: true },
         insuranceProvider: { type: String, default: "" },
         notes: { type: String, default: "" },
+        slotId: { type: Schema.Types.ObjectId, ref: "AppointmentSlot", default: null },
+        queueNumber: { type: Number, default: null },
         status: {
             type: String,
             enum: ["pending", "confirmed", "cancelled", "completed"],
-            default: "pending",
+            default: "confirmed",
         },
         userId: { type: Schema.Types.ObjectId, ref: "User", default: null },
         guestToken: { type: String, required: true, index: true },

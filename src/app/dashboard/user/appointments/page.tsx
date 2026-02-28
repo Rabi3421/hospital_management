@@ -71,6 +71,7 @@ interface Appointment {
     preferredDate: string;
     preferredTime: string;
     status: string;
+    queueNumber?: number;
     createdAt: string;
 }
 
@@ -270,9 +271,16 @@ export default function AppointmentsPage() {
 
                                     {/* Info */}
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-navy font-semibold text-sm">
-                                            {apt.doctorPreference === "No Preference" ? "Any Available Doctor" : apt.doctorPreference.split(" —")[0]}
-                                        </p>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <p className="text-navy font-semibold text-sm">
+                                                {apt.doctorPreference === "No Preference" ? "Any Available Doctor" : apt.doctorPreference.split(" —")[0]}
+                                            </p>
+                                            {apt.queueNumber && (
+                                                <span className="inline-flex items-center gap-1 bg-gold/15 text-gold text-xs font-bold px-2 py-0.5 rounded-full border border-gold/30">
+                                                    #{apt.queueNumber}
+                                                </span>
+                                            )}
+                                        </div>
                                         <p className="text-navy/50 text-xs">{apt.service}</p>
                                     </div>
 
