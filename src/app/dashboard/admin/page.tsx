@@ -25,12 +25,12 @@ interface AdminStats {
 
 function StatCard({ label, value, icon, sub }: { label: string; value: number | string; icon: React.ReactNode; sub?: string }) {
     return (
-        <div className="glass-card p-5 rounded-2xl">
-            <div className="flex items-start justify-between mb-3">
-                <div className="w-11 h-11 rounded-xl bg-navy/5 flex items-center justify-center">{icon}</div>
+        <div className="glass-card p-3 sm:p-5 rounded-2xl">
+            <div className="flex items-start justify-between mb-2 sm:mb-3">
+                <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-navy/5 flex items-center justify-center">{icon}</div>
             </div>
-            <p className="font-fraunces text-3xl font-bold text-navy">{value}</p>
-            <p className="text-navy/50 text-sm mt-1">{label}</p>
+            <p className="font-fraunces text-2xl sm:text-3xl font-bold text-navy">{value}</p>
+            <p className="text-navy/50 text-xs sm:text-sm mt-1">{label}</p>
             {sub && <p className="text-xs text-navy/30 mt-0.5">{sub}</p>}
         </div>
     );
@@ -72,30 +72,30 @@ export default function AdminDashboard() {
         <div className="flex w-full">
             <DashboardSidebar navItems={adminNavItems} title="DentalCare" subtitle="Admin Panel" />
 
-            <main className="flex-1 min-w-0 p-6 lg:p-8 pt-16 lg:pt-8">
+            <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8 overflow-x-hidden">
                 {/* Header */}
-                <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
-                        <h1 className="font-fraunces text-2xl lg:text-3xl font-bold text-navy">
+                        <h1 className="font-fraunces text-xl sm:text-2xl lg:text-3xl font-bold text-navy">
                             Admin Dashboard
                         </h1>
-                        <p className="text-navy/50 mt-1">Hello, {user?.name ?? "Admin"} — here&apos;s today&apos;s overview.</p>
+                        <p className="text-navy/50 text-sm mt-1">Hello, {user?.name ?? "Admin"} — here&apos;s today&apos;s overview.</p>
                     </div>
-                    <div className="text-sm text-navy/40">
-                        {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+                    <div className="text-xs sm:text-sm text-navy/40">
+                        {new Date().toLocaleDateString("en-US", { weekday: "short", year: "numeric", month: "short", day: "numeric" })}
                     </div>
                 </div>
 
                 {statsLoading ? (
-                    <div className="grid grid-cols-2 xl:grid-cols-3 gap-5 mb-8">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 mb-6 sm:mb-8">
                         {[...Array(6)].map((_, i) => (
-                            <div key={i} className="glass-card p-5 rounded-2xl animate-pulse h-28" />
+                            <div key={i} className="glass-card p-4 rounded-2xl animate-pulse h-24 sm:h-28" />
                         ))}
                     </div>
                 ) : stats ? (
                     <>
                         {/* Stat cards */}
-                        <div className="grid grid-cols-2 xl:grid-cols-3 gap-5 mb-8">
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 mb-6 sm:mb-8">
                             <StatCard label="Total Patients" value={stats.totalUsers}
                                 icon={<svg className="w-5 h-5 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>}
                             />
@@ -116,9 +116,9 @@ export default function AdminDashboard() {
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+                        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
                             {/* Weekly appointments bar chart */}
-                            <div className="xl:col-span-2 glass-card rounded-2xl p-6">
+                            <div className="xl:col-span-2 glass-card rounded-2xl p-4 sm:p-6">
                                 <h2 className="font-fraunces text-lg font-semibold text-navy mb-5">Weekly Appointments</h2>
                                 <ResponsiveContainer width="100%" height={230}>
                                     <BarChart data={stats.appointmentsTrend} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
@@ -132,8 +132,8 @@ export default function AdminDashboard() {
                             </div>
 
                             {/* Department load pie */}
-                            <div className="glass-card rounded-2xl p-6">
-                                <h2 className="font-fraunces text-lg font-semibold text-navy mb-5">Department Load</h2>
+                            <div className="glass-card rounded-2xl p-4 sm:p-6">
+                                <h2 className="font-fraunces text-lg font-semibold text-navy mb-4">Department Load</h2>
                                 <ResponsiveContainer width="100%" height={230}>
                                     <PieChart>
                                         <Pie data={stats.departmentLoad} cx="50%" cy="45%" innerRadius={55} outerRadius={80} paddingAngle={3} dataKey="value">
@@ -149,14 +149,14 @@ export default function AdminDashboard() {
                         </div>
 
                         {/* Recent appointments table */}
-                        <div className="glass-card rounded-2xl p-6">
-                            <h2 className="font-fraunces text-lg font-semibold text-navy mb-5">Today&apos;s Appointments</h2>
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm">
+                        <div className="glass-card rounded-2xl p-4 sm:p-6">
+                            <h2 className="font-fraunces text-lg font-semibold text-navy mb-4 sm:mb-5">Today&apos;s Appointments</h2>
+                            <div className="overflow-x-auto -mx-4 sm:mx-0">
+                                <table className="w-full text-sm min-w-[480px] sm:min-w-0">
                                     <thead>
                                         <tr className="text-navy/40 text-left border-b border-navy/10">
-                                            <th className="pb-3 font-medium pr-6">Patient</th>
-                                            <th className="pb-3 font-medium pr-6">Doctor</th>
+                                            <th className="pb-3 font-medium px-4 sm:px-0 sm:pr-6">Patient</th>
+                                            <th className="pb-3 font-medium pr-6 hidden sm:table-cell">Doctor</th>
                                             <th className="pb-3 font-medium pr-6">Time</th>
                                             <th className="pb-3 font-medium">Status</th>
                                         </tr>
@@ -164,11 +164,11 @@ export default function AdminDashboard() {
                                     <tbody>
                                         {stats.recentAppointments.map((apt) => (
                                             <tr key={apt.id} className="border-b border-navy/5 hover:bg-navy/5 transition-colors">
-                                                <td className="py-3 pr-6 text-navy font-medium">{apt.patient}</td>
-                                                <td className="py-3 pr-6 text-navy/70">{apt.doctor}</td>
+                                                <td className="py-3 px-4 sm:px-0 sm:pr-6 text-navy font-medium">{apt.patient}</td>
+                                                <td className="py-3 pr-6 text-navy/70 hidden sm:table-cell">{apt.doctor}</td>
                                                 <td className="py-3 pr-6 text-navy/60">{apt.time}</td>
-                                                <td className="py-3">
-                                                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium capitalize ${STATUS_STYLES[apt.status] ?? "bg-navy/10 text-navy"}`}>
+                                                <td className="py-3 pr-4 sm:pr-0">
+                                                    <span className={`px-2 sm:px-2.5 py-1 rounded-full text-xs font-medium capitalize ${STATUS_STYLES[apt.status] ?? "bg-navy/10 text-navy"}`}>
                                                         {apt.status.replace("-", " ")}
                                                     </span>
                                                 </td>

@@ -19,9 +19,12 @@ interface Department {
 const EMPTY_FORM = { name: "", description: "", head: "", doctorCount: 0, icon: "🦷", isActive: true };
 const ICON_OPTIONS = ["🦷", "😁", "🔬", "👶", "✨", "🩺", "🏥", "💊", "🫀", "🧬"];
 
+interface DoctorOption { _id: string; name: string; specialty: string; avatar: string; }
+
 export default function AdminDepartmentsPage() {
     const { accessToken } = useAuth();
     const [departments, setDepartments] = useState<Department[]>([]);
+    const [doctors, setDoctors] = useState<DoctorOption[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
 
@@ -45,7 +48,15 @@ export default function AdminDepartmentsPage() {
         } finally { setLoading(false); }
     }, [headers]);
 
-    useEffect(() => { fetchDepts(); }, [fetchDepts]);
+    const fetchDoctors = useCallback(async () => {
+        try {
+            const res = await fetch("/api/admin/doctors?active=true", { headers: headers(), credentials: "include" });
+            const json = await res.json();
+            if (json.success) setDoctors(json.data);
+        } catch { /* silent */ }
+    }, [headers]);
+
+    useEffect(() => { fetchDepts(); fetchDoctors(); }, [fetchDepts, fetchDoctors]);
 
     const flash = (type: "ok" | "err", msg: string) => {
         setFeedback({ type, msg });
@@ -104,14 +115,14 @@ export default function AdminDepartmentsPage() {
     return (
         <div className="flex w-full">
             <DashboardSidebar navItems={adminNavItems} title="DentalCare" subtitle="Admin Panel" />
-            <main className="flex-1 min-w-0 p-6 lg:p-8 pt-16 lg:pt-8">
+            <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8 overflow-x-hidden">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 sm:mb-8">
                     <div>
-                        <h1 className="font-fraunces text-2xl lg:text-3xl font-bold text-navy">Departments</h1>
-                        <p className="text-navy/50 mt-1">Manage clinic departments and their staff.</p>
+                        <h1 className="font-fraunces text-xl sm:text-2xl lg:text-3xl font-bold text-navy">Departments</h1>
+                        <p className="text-navy/50 text-sm mt-1">Manage clinic departments and their staff.</p>
                     </div>
-                    <button onClick={openCreate} className="btn-gold text-sm px-5 py-2.5 flex items-center gap-2 self-start sm:self-auto">
+                    <button onClick={openCreate} className="btn-gold text-sm px-4 sm:px-5 py-2.5 flex items-center gap-2 self-start sm:self-auto">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.5v15m7.5-7.5h-15" /></svg>
                         Add Department
                     </button>
@@ -124,14 +135,14 @@ export default function AdminDepartmentsPage() {
                 )}
 
                 {/* Stats */}
-                <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-5 sm:mb-6">
                     {[
                         { label: "Total", value: departments.length },
                         { label: "Active", value: departments.filter((d) => d.isActive).length },
                         { label: "Doctors", value: departments.reduce((s, d) => s + d.doctorCount, 0) },
                     ].map(({ label, value }) => (
-                        <div key={label} className="glass-card rounded-2xl p-4 text-center">
-                            <p className="text-2xl font-fraunces font-bold text-navy">{value}</p>
+                        <div key={label} className="glass-card rounded-2xl p-3 sm:p-4 text-center">
+                            <p className="text-xl sm:text-2xl font-fraunces font-bold text-navy">{value}</p>
                             <p className="text-navy/50 text-xs mt-1">{label}</p>
                         </div>
                     ))}
@@ -145,7 +156,7 @@ export default function AdminDepartmentsPage() {
 
                 {/* Grid */}
                 {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                         {Array.from({ length: 6 }).map((_, i) => (
                             <div key={i} className="glass-card rounded-2xl p-5 animate-pulse">
                                 <div className="w-12 h-12 rounded-xl bg-navy/8 mb-4" />
@@ -155,11 +166,11 @@ export default function AdminDepartmentsPage() {
                         ))}
                     </div>
                 ) : filtered.length === 0 ? (
-                    <div className="glass-card rounded-2xl p-12 text-center text-navy/40 text-sm">
+                    <div className="glass-card rounded-2xl p-8 sm:p-12 text-center text-navy/40 text-sm">
                         {search ? "No departments match your search." : "No departments yet."}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                         {filtered.map((d) => (
                             <div key={d._id} className={`glass-card rounded-2xl p-5 transition-all ${!d.isActive ? "opacity-60" : ""}`}>
                                 <div className="flex items-start justify-between mb-4">
@@ -224,7 +235,17 @@ export default function AdminDepartmentsPage() {
                                 <textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} rows={2} className="w-full px-4 py-3 rounded-xl border border-navy/15 bg-white text-navy text-sm placeholder:text-navy/30 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/15 transition-all resize-none" placeholder="Brief description…" />
                             </FormField>
                             <FormField label="Head Doctor">
-                                <input type="text" value={form.head} onChange={(e) => setForm((p) => ({ ...p, head: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-navy/15 bg-white text-navy text-sm placeholder:text-navy/30 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/15 transition-all" placeholder="Dr. Full Name" />
+                                <select value={form.head} onChange={(e) => setForm((p) => ({ ...p, head: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-navy/15 bg-white text-navy text-sm focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/15 transition-all appearance-none">
+                                    <option value="">— Select a doctor —</option>
+                                    {doctors.map((d) => (
+                                        <option key={d._id} value={d.name}>
+                                            {d.avatar} {d.name} — {d.specialty}
+                                        </option>
+                                    ))}
+                                </select>
+                                {doctors.length === 0 && (
+                                    <p className="text-xs text-navy/40 mt-1">No doctors added yet. <a href="/dashboard/admin/schedule" className="text-gold hover:underline">Add doctors in Schedule →</a></p>
+                                )}
                             </FormField>
                             <FormField label="Number of Doctors">
                                 <input type="number" min={0} value={form.doctorCount} onChange={(e) => setForm((p) => ({ ...p, doctorCount: parseInt(e.target.value) || 0 }))} className="w-full px-4 py-3 rounded-xl border border-navy/15 bg-white text-navy text-sm focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/15 transition-all" />

@@ -8,6 +8,18 @@ export interface IUser extends Document {
     password: string;
     role: Role;
     isActive: boolean;
+    // Profile fields
+    phone?: string;
+    dob?: string;
+    gender?: string;
+    address?: string;
+    emergencyContact?: string;
+    bloodType?: string;
+    allergies?: string;
+    currentMedications?: string;
+    medicalConditions?: string;
+    insuranceProvider?: string;
+    insuranceId?: string;
     createdAt: Date;
     updatedAt: Date;
     comparePassword(candidate: string): Promise<boolean>;
@@ -44,6 +56,18 @@ const UserSchema = new Schema<IUser>(
             type: Boolean,
             default: true,
         },
+        // Profile fields
+        phone: { type: String, default: "" },
+        dob: { type: String, default: "" },
+        gender: { type: String, default: "" },
+        address: { type: String, default: "" },
+        emergencyContact: { type: String, default: "" },
+        bloodType: { type: String, default: "" },
+        allergies: { type: String, default: "" },
+        currentMedications: { type: String, default: "" },
+        medicalConditions: { type: String, default: "" },
+        insuranceProvider: { type: String, default: "" },
+        insuranceId: { type: String, default: "" },
     },
     { timestamps: true }
 );

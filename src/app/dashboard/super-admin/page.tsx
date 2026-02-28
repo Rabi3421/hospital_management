@@ -75,7 +75,7 @@ export default function SuperAdminDashboard() {
                 </div>
 
                 {statsLoading ? (
-                    <div className="grid grid-cols-2 xl:grid-cols-5 gap-5 mb-8">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
                         {[...Array(5)].map((_, i) => (
                             <div key={i} className="glass-card p-5 rounded-2xl animate-pulse h-24" />
                         ))}
@@ -181,12 +181,12 @@ export default function SuperAdminDashboard() {
                                             </svg>
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-navy text-sm font-medium">{log.action}</p>
-                                            <p className="text-navy/40 text-xs mt-0.5">
+                                            <p className="text-navy text-sm font-medium truncate">{log.action}</p>
+                                            <p className="text-navy/40 text-xs mt-0.5 truncate">
                                                 By <span className="text-gold">{log.by}</span> → {log.target}
                                             </p>
                                         </div>
-                                        <span className="text-navy/30 text-xs flex-shrink-0">{log.time}</span>
+                                        <span className="text-navy/30 text-xs flex-shrink-0 ml-2">{log.time}</span>
                                     </div>
                                 ))}
                             </div>

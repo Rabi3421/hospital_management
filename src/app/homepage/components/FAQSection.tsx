@@ -64,7 +64,7 @@ function FAQItem({ faq, index }: { faq: (typeof faqs)[0]; index: number }) {
     >
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between p-6 text-left gap-4"
+        className="w-full flex items-center justify-between p-4 sm:p-6 text-left gap-4"
         aria-expanded={open}
       >
         <span className="font-semibold text-navy text-base pr-2">{faq.q}</span>
@@ -108,14 +108,14 @@ export default function FAQSection() {
   }, []);
 
   return (
-    <section id="faq" className="py-24 lg:py-32 bg-cream-dark">
-      <div className="max-w-4xl mx-auto px-6 lg:px-8">
+    <section id="faq" className="py-16 sm:py-24 lg:py-32 bg-cream-dark">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div ref={titleRef} className="text-center mb-16">
           <span className="inline-block text-xs font-semibold tracking-[0.2em] uppercase text-gold mb-4">
             Common Questions
           </span>
-          <h2 className="font-display text-4xl md:text-5xl font-semibold text-navy tracking-tight leading-[1.1]">
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold text-navy tracking-tight leading-[1.1]">
             Everything You
             <br />
             <em className="font-light italic text-navy/60">Need to Know.</em>

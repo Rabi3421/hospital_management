@@ -97,17 +97,18 @@ export default function AdminSettingsPage() {
     return (
         <div className="flex w-full">
             <DashboardSidebar navItems={adminNavItems} title="DentalCare" subtitle="Admin Panel" />
-            <main className="flex-1 min-w-0 p-6 lg:p-8 pt-16 lg:pt-8 max-w-3xl">
-                <div className="mb-8">
-                    <h1 className="font-fraunces text-2xl lg:text-3xl font-bold text-navy">Settings</h1>
-                    <p className="text-navy/50 mt-1">Manage clinic information and your account.</p>
+            <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8 overflow-x-hidden">
+                <div className="max-w-3xl">
+                <div className="mb-6 sm:mb-8">
+                    <h1 className="font-fraunces text-xl sm:text-2xl lg:text-3xl font-bold text-navy">Settings</h1>
+                    <p className="text-navy/50 text-sm mt-1">Manage clinic information and your account.</p>
                 </div>
 
                 {/* Profile card */}
-                <section className="glass-card rounded-2xl p-6 mb-6">
+                <section className="glass-card rounded-2xl p-4 sm:p-6 mb-5 sm:mb-6">
                     <h2 className="font-fraunces font-bold text-navy text-lg mb-4">Your Account</h2>
-                    <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-2xl bg-navy/10 flex items-center justify-center flex-shrink-0">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-navy/10 flex items-center justify-center flex-shrink-0">
                             <span className="font-fraunces text-xl font-bold text-navy">
                                 {user?.name?.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) ?? "AD"}
                             </span>
@@ -121,7 +122,7 @@ export default function AdminSettingsPage() {
                 </section>
 
                 {/* Clinic info */}
-                <section className="glass-card rounded-2xl p-6 mb-6">
+                <section className="glass-card rounded-2xl p-4 sm:p-6 mb-5 sm:mb-6">
                     <div className="flex items-center justify-between mb-5">
                         <h2 className="font-fraunces font-bold text-navy text-lg">Clinic Information</h2>
                         <span className="text-xs text-navy/30">Stored locally</span>
@@ -166,7 +167,7 @@ export default function AdminSettingsPage() {
                 </section>
 
                 {/* Password change */}
-                <section className="glass-card rounded-2xl p-6">
+                <section className="glass-card rounded-2xl p-4 sm:p-6">
                     <h2 className="font-fraunces font-bold text-navy text-lg mb-5">Change Password</h2>
                     {pwMsg && (
                         <div className={`mb-4 px-4 py-3 rounded-xl text-sm font-medium ${pwMsg.type === "ok" ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
@@ -195,6 +196,7 @@ export default function AdminSettingsPage() {
                         {pwSaving ? <><svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Changing…</> : "Change Password"}
                     </button>
                 </section>
+                </div>
             </main>
         </div>
     );

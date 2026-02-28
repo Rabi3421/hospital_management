@@ -232,7 +232,7 @@ export default function AdminManagementPage() {
                         { label: "This Month", value: admins.filter((a) => new Date(a.createdAt).getMonth() === new Date().getMonth()).length },
                     ].map(({ label, value }) => (
                         <div key={label} className="glass-card rounded-2xl p-4 text-center">
-                            <p className="text-2xl font-fraunces font-bold text-navy">{value}</p>
+                            <p className="text-xl sm:text-2xl font-fraunces font-bold text-navy">{value}</p>
                             <p className="text-navy/50 text-xs mt-1">{label}</p>
                         </div>
                     ))}
@@ -298,7 +298,7 @@ export default function AdminManagementPage() {
                                                     {new Date(admin.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                                                 </td>
                                                 <td className="px-5 py-4">
-                                                    <div className="flex items-center justify-end gap-1">
+                                                    <div className="flex items-center justify-end gap-0.5 sm:gap-1">
                                                         <button onClick={() => openEdit(admin)} title="Edit" className="p-1.5 rounded-lg hover:bg-navy/10 text-navy/50 hover:text-navy transition-colors">
                                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />

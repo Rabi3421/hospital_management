@@ -162,15 +162,15 @@ export default function ServicesSection() {
   }, []);
 
   return (
-    <section id="services" className="py-24 lg:py-32 bg-cream">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+    <section id="services" className="py-16 sm:py-24 lg:py-32 bg-cream">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div ref={titleRef} className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+        <div ref={titleRef} className="flex flex-col md:flex-row md:items-end justify-between gap-5 sm:gap-8 mb-10 sm:mb-16">
           <div>
             <span className="inline-block text-xs font-semibold tracking-[0.2em] uppercase text-gold mb-4">
               Our Specialties
             </span>
-            <h2 className="font-display text-4xl md:text-5xl font-semibold text-navy tracking-tight leading-[1.1]">
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold text-navy tracking-tight leading-[1.1]">
               Comprehensive Dental
               <br />
               <em className="font-light italic text-navy/60">Care Under One Roof</em>

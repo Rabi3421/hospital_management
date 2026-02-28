@@ -118,14 +118,14 @@ export default function AdminUsersPage() {
     return (
         <div className="flex w-full">
             <DashboardSidebar navItems={adminNavItems} title="DentalCare" subtitle="Admin Panel" />
-            <main className="flex-1 min-w-0 p-6 lg:p-8 pt-16 lg:pt-8">
+            <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8 overflow-x-hidden">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5 sm:mb-8">
                     <div>
-                        <h1 className="font-fraunces text-2xl lg:text-3xl font-bold text-navy">User Management</h1>
-                        <p className="text-navy/50 mt-1">View and manage all registered patients.</p>
+                        <h1 className="font-fraunces text-xl sm:text-2xl lg:text-3xl font-bold text-navy">User Management</h1>
+                        <p className="text-navy/50 text-sm mt-1">View and manage all registered patients.</p>
                     </div>
-                    <div className="bg-navy/5 rounded-xl px-4 py-2 text-sm text-navy/60">
+                    <div className="bg-navy/5 rounded-xl px-4 py-2 text-sm text-navy/60 self-start sm:self-auto">
                         <span className="font-semibold text-navy">{total}</span> total patients
                     </div>
                 </div>
@@ -137,7 +137,7 @@ export default function AdminUsersPage() {
                 )}
 
                 {/* Search */}
-                <div className="glass-card rounded-2xl p-4 mb-4 flex items-center gap-3">
+                <div className="glass-card rounded-2xl p-3 sm:p-4 mb-4 flex items-center gap-3">
                     <svg className="w-4 h-4 text-navy/40 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="m21 21-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607Z" />
                     </svg>
@@ -160,7 +160,7 @@ export default function AdminUsersPage() {
                     {loading ? (
                         <div className="divide-y divide-navy/5">
                             {Array.from({ length: 6 }).map((_, i) => (
-                                <div key={i} className="px-5 py-4 flex items-center gap-3 animate-pulse">
+                                <div key={i} className="px-4 sm:px-5 py-4 flex items-center gap-3 animate-pulse">
                                     <div className="w-9 h-9 rounded-xl bg-navy/8 flex-shrink-0" />
                                     <div className="flex-1 space-y-2">
                                         <div className="h-3 bg-navy/8 rounded w-1/3" />
@@ -170,74 +170,111 @@ export default function AdminUsersPage() {
                             ))}
                         </div>
                     ) : users.length === 0 ? (
-                        <div className="p-12 text-center text-navy/40 text-sm">
+                        <div className="p-8 sm:p-12 text-center text-navy/40 text-sm">
                             {debouncedSearch ? "No patients match your search." : "No patients registered yet."}
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="border-b border-navy/10">
-                                        <th className="text-left px-5 py-3.5 text-navy/50 font-medium">Patient</th>
-                                        <th className="text-left px-5 py-3.5 text-navy/50 font-medium hidden md:table-cell">Email</th>
-                                        <th className="text-center px-5 py-3.5 text-navy/50 font-medium">Status</th>
-                                        <th className="text-left px-5 py-3.5 text-navy/50 font-medium hidden lg:table-cell">Joined</th>
-                                        <th className="text-right px-5 py-3.5 text-navy/50 font-medium">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {users.map((u) => (
-                                        <tr key={u._id} className="border-b border-navy/5 hover:bg-navy/[0.02] transition-colors">
-                                            <td className="px-5 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 rounded-xl bg-gold/15 flex items-center justify-center flex-shrink-0">
-                                                        <span className="font-fraunces text-xs font-bold text-gold">{initials(u.name)}</span>
-                                                    </div>
-                                                    <span className="font-medium text-navy">{u.name}</span>
+                        <>
+                            {/* Mobile cards */}
+                            <div className="md:hidden divide-y divide-navy/5">
+                                {users.map((u) => (
+                                    <div key={u._id} className="px-4 py-4">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className="w-9 h-9 rounded-xl bg-gold/15 flex items-center justify-center flex-shrink-0">
+                                                    <span className="font-fraunces text-xs font-bold text-gold">{initials(u.name)}</span>
                                                 </div>
-                                            </td>
-                                            <td className="px-5 py-4 text-navy/60 hidden md:table-cell">{u.email}</td>
-                                            <td className="px-5 py-4 text-center">
-                                                <button
-                                                    onClick={() => toggleActive(u)}
-                                                    className={`px-2.5 py-1 rounded-full text-xs font-medium cursor-pointer transition-colors ${u.isActive ? "bg-green-100 text-green-700 hover:bg-green-200" : "bg-red-100 text-red-600 hover:bg-red-200"}`}
-                                                >
-                                                    {u.isActive ? "Active" : "Inactive"}
-                                                </button>
-                                            </td>
-                                            <td className="px-5 py-4 text-navy/50 hidden lg:table-cell">
-                                                {new Date(u.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                                            </td>
-                                            <td className="px-5 py-4">
-                                                <div className="flex items-center justify-end gap-1">
-                                                    <button
-                                                        onClick={() => { setSelected(u); setModal("view"); }}
-                                                        title="View details"
-                                                        className="p-1.5 rounded-lg hover:bg-navy/10 text-navy/50 hover:text-navy transition-colors"
-                                                    >
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                                                    </button>
-                                                    <button
-                                                        onClick={() => { setSelected(u); setNewPassword(""); setShowPw(false); setModal("reset"); }}
-                                                        title="Reset password"
-                                                        className="p-1.5 rounded-lg hover:bg-gold/10 text-navy/50 hover:text-gold transition-colors"
-                                                    >
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" /></svg>
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDelete(u)}
-                                                        title="Delete"
-                                                        className="p-1.5 rounded-lg hover:bg-red-50 text-navy/50 hover:text-red-500 transition-colors"
-                                                    >
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
-                                                    </button>
+                                                <div className="min-w-0">
+                                                    <p className="font-semibold text-navy text-sm truncate">{u.name}</p>
+                                                    <p className="text-navy/40 text-xs truncate">{u.email}</p>
                                                 </div>
-                                            </td>
+                                            </div>
+                                            <button
+                                                onClick={() => toggleActive(u)}
+                                                className={`flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-medium ${u.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
+                                                {u.isActive ? "Active" : "Inactive"}
+                                            </button>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 mt-3">
+                                            <button onClick={() => { setSelected(u); setModal("view"); }} className="p-1.5 rounded-lg hover:bg-navy/10 text-navy/50 hover:text-navy transition-colors">
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                            </button>
+                                            <button onClick={() => { setSelected(u); setNewPassword(""); setShowPw(false); setModal("reset"); }} className="p-1.5 rounded-lg hover:bg-gold/10 text-navy/50 hover:text-gold transition-colors">
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" /></svg>
+                                            </button>
+                                            <button onClick={() => handleDelete(u)} className="p-1.5 rounded-lg hover:bg-red-50 text-navy/50 hover:text-red-500 transition-colors">
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            {/* Desktop table */}
+                            <div className="hidden md:block overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="border-b border-navy/10">
+                                            <th className="text-left px-5 py-3.5 text-navy/50 font-medium">Patient</th>
+                                            <th className="text-left px-5 py-3.5 text-navy/50 font-medium">Email</th>
+                                            <th className="text-center px-5 py-3.5 text-navy/50 font-medium">Status</th>
+                                            <th className="text-left px-5 py-3.5 text-navy/50 font-medium hidden lg:table-cell">Joined</th>
+                                            <th className="text-right px-5 py-3.5 text-navy/50 font-medium">Actions</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody>
+                                        {users.map((u) => (
+                                            <tr key={u._id} className="border-b border-navy/5 hover:bg-navy/[0.02] transition-colors">
+                                                <td className="px-5 py-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-9 h-9 rounded-xl bg-gold/15 flex items-center justify-center flex-shrink-0">
+                                                            <span className="font-fraunces text-xs font-bold text-gold">{initials(u.name)}</span>
+                                                        </div>
+                                                        <span className="font-medium text-navy">{u.name}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-5 py-4 text-navy/60">{u.email}</td>
+                                                <td className="px-5 py-4 text-center">
+                                                    <button
+                                                        onClick={() => toggleActive(u)}
+                                                        className={`px-2.5 py-1 rounded-full text-xs font-medium cursor-pointer transition-colors ${u.isActive ? "bg-green-100 text-green-700 hover:bg-green-200" : "bg-red-100 text-red-600 hover:bg-red-200"}`}
+                                                    >
+                                                        {u.isActive ? "Active" : "Inactive"}
+                                                    </button>
+                                                </td>
+                                                <td className="px-5 py-4 text-navy/50 hidden lg:table-cell">
+                                                    {new Date(u.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                                                </td>
+                                                <td className="px-5 py-4">
+                                                    <div className="flex items-center justify-end gap-1">
+                                                        <button
+                                                            onClick={() => { setSelected(u); setModal("view"); }}
+                                                            title="View details"
+                                                            className="p-1.5 rounded-lg hover:bg-navy/10 text-navy/50 hover:text-navy transition-colors"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => { setSelected(u); setNewPassword(""); setShowPw(false); setModal("reset"); }}
+                                                            title="Reset password"
+                                                            className="p-1.5 rounded-lg hover:bg-gold/10 text-navy/50 hover:text-gold transition-colors"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" /></svg>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDelete(u)}
+                                                            title="Delete"
+                                                            className="p-1.5 rounded-lg hover:bg-red-50 text-navy/50 hover:text-red-500 transition-colors"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
                     )}
                 </div>
 

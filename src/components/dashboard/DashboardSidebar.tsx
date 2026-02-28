@@ -100,10 +100,10 @@ export default function DashboardSidebar({ navItems, title, subtitle }: Dashboar
                 />
             )}
 
-            {/* Mobile toggle button */}
+            {/* Mobile toggle button — always visible on mobile */}
             <button
                 onClick={() => setMobileOpen(true)}
-                className="fixed top-4 left-4 z-20 lg:hidden w-10 h-10 bg-navy rounded-lg flex items-center justify-center shadow-lg"
+                className="fixed top-3 left-3 z-20 lg:hidden w-10 h-10 bg-navy rounded-xl flex items-center justify-center shadow-lg"
                 aria-label="Open menu"
             >
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,280 +1,257 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import { userNavItems } from "../navItems";
+import { useAuth } from "@/context/AuthContext";
 
-const navItems = [
-    {
-        label: "Overview",
-        href: "/dashboard/user",
-        icon: (
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm0 9.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zm9.75-9.75A2.25 2.25 0 0115.75 3.75H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zm0 9.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-            </svg>
-        ),
-    },
-    {
-        label: "My Appointments",
-        href: "/dashboard/user/appointments",
-        icon: (
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-            </svg>
-        ),
-    },
-    {
-        label: "Medical Records",
-        href: "/dashboard/user/records",
-        icon: (
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-            </svg>
-        ),
-    },
-    {
-        label: "Prescriptions",
-        href: "/dashboard/user/prescriptions",
-        icon: (
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
-            </svg>
-        ),
-    },
-    {
-        label: "Profile",
-        href: "/dashboard/user/profile",
-        icon: (
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-            </svg>
-        ),
-    },
-];
+interface RecordItem {
+    id: string;
+    title: string;
+    type: "visit" | "prescription";
+    date: string;
+    doctor: string;
+    service: string;
+    diagnosis?: string;
+    treatment?: string;
+    fileUrl?: string;
+    fileType?: string;
+}
 
-type RecordCategory = "all" | "lab" | "xray" | "report" | "note";
+type ViewMode = "grid" | "list";
+type Filter = "all" | "visit" | "prescription";
 
-const records = [
-    {
-        id: 1,
-        title: "Full Mouth X-Ray",
-        category: "xray",
-        date: "Jan 28, 2026",
-        doctor: "Dr. Sarah Johnson",
-        size: "2.4 MB",
-        format: "DICOM",
-        color: "bg-blue-50 text-blue-600",
-        icon: "🦷",
-    },
-    {
-        id: 2,
-        title: "Blood Test Results",
-        category: "lab",
-        date: "Jan 15, 2026",
-        doctor: "Dr. James Wilson",
-        size: "156 KB",
-        format: "PDF",
-        color: "bg-green-50 text-green-600",
-        icon: "🧪",
-    },
-    {
-        id: 3,
-        title: "Treatment Summary — Braces",
-        category: "report",
-        date: "Dec 20, 2025",
-        doctor: "Dr. Emily Chen",
-        size: "340 KB",
-        format: "PDF",
-        color: "bg-gold/10 text-gold",
-        icon: "📋",
-    },
-    {
-        id: 4,
-        title: "Cavity Diagnosis Note",
-        category: "note",
-        date: "Nov 10, 2025",
-        doctor: "Dr. Sarah Johnson",
-        size: "48 KB",
-        format: "PDF",
-        color: "bg-purple-50 text-purple-600",
-        icon: "📝",
-    },
-    {
-        id: 5,
-        title: "Periapical X-Ray — Upper Left",
-        category: "xray",
-        date: "Oct 5, 2025",
-        doctor: "Dr. Robert Kim",
-        size: "1.1 MB",
-        format: "DICOM",
-        color: "bg-blue-50 text-blue-600",
-        icon: "🦷",
-    },
-    {
-        id: 6,
-        title: "Post-Op Report — Extraction",
-        category: "report",
-        date: "Sep 18, 2025",
-        doctor: "Dr. James Wilson",
-        size: "220 KB",
-        format: "PDF",
-        color: "bg-gold/10 text-gold",
-        icon: "📋",
-    },
-];
+export default function RecordsPage() {
+    const { accessToken } = useAuth();
+    const [records, setRecords] = useState<RecordItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [view, setView] = useState<ViewMode>("list");
+    const [filter, setFilter] = useState<Filter>("all");
+    const [expanded, setExpanded] = useState<string | null>(null);
 
-const CATEGORY_LABELS: Record<RecordCategory, string> = {
-    all: "All Records",
-    lab: "Lab Results",
-    xray: "X-Rays",
-    report: "Reports",
-    note: "Doctor Notes",
-};
+    const headers = useCallback(() => ({
+        "Content-Type": "application/json",
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    }), [accessToken]);
 
-export default function MedicalRecordsPage() {
-    const [activeCategory, setActiveCategory] = useState<RecordCategory>("all");
-    const [searchQuery, setSearchQuery] = useState("");
-    const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+    useEffect(() => {
+        const load = async () => {
+            setLoading(true);
+            try {
+                const res = await fetch("/api/appointments", { headers: headers(), credentials: "include" });
+                const json = await res.json();
+                if (json.success) {
+                    const recs: RecordItem[] = [];
+                    for (const appt of json.data.appointments) {
+                        // Every completed appointment → Visit Summary record
+                        if (appt.status === "completed" || appt.completionDetails?.diagnosis) {
+                            recs.push({
+                                id: `visit-${appt._id}`,
+                                title: `Visit Summary — ${appt.service}`,
+                                type: "visit",
+                                date: appt.preferredDate,
+                                doctor: appt.doctorPreference ?? "Your Doctor",
+                                service: appt.service,
+                                diagnosis: appt.completionDetails?.diagnosis,
+                                treatment: appt.completionDetails?.treatment,
+                            });
+                        }
+                        // Each prescription file → document record
+                        if (appt.prescriptions?.length) {
+                            for (const rx of appt.prescriptions) {
+                                recs.push({
+                                    id: `rx-${rx._id ?? appt._id + rx.title}`,
+                                    title: rx.title,
+                                    type: "prescription",
+                                    date: rx.uploadedAt ?? appt.preferredDate,
+                                    doctor: appt.doctorPreference ?? "Your Doctor",
+                                    service: appt.service,
+                                    fileUrl: rx.fileUrl,
+                                    fileType: rx.fileType,
+                                });
+                            }
+                        }
+                    }
+                    recs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                    setRecords(recs);
+                }
+            } finally { setLoading(false); }
+        };
+        load();
+    }, [headers]);
 
-    const filtered = records.filter((r) => {
-        const matchesCategory = activeCategory === "all" || r.category === activeCategory;
-        const matchesSearch =
-            searchQuery === "" ||
-            r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            r.doctor.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesCategory && matchesSearch;
-    });
+    const filtered = records.filter((r) => filter === "all" || r.type === filter);
+    const visitCount = records.filter((r) => r.type === "visit").length;
+    const rxCount = records.filter((r) => r.type === "prescription").length;
+
+    const fmtDate = (d: string) => {
+        const dt = new Date(d);
+        return isNaN(dt.getTime()) ? d : dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    };
 
     return (
         <div className="flex w-full">
-            <DashboardSidebar navItems={navItems} title="DentalCare" subtitle="Patient Portal" />
-
-            <main className="flex-1 min-w-0 p-6 lg:p-8 pt-16 lg:pt-8">
-                {/* Header */}
-                <div className="mb-8">
-                    <h1 className="font-fraunces text-2xl lg:text-3xl font-bold text-navy">Medical Records</h1>
-                    <p className="text-navy/50 mt-1">View and download your dental health records.</p>
+            <DashboardSidebar navItems={userNavItems} title="DentalCare" subtitle="Patient Portal" />
+            <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8 overflow-x-hidden">
+                <div className="mb-5 sm:mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+                    <div>
+                        <h1 className="font-fraunces text-xl sm:text-2xl lg:text-3xl font-bold text-navy">Medical Records</h1>
+                        <p className="text-navy/50 text-sm mt-1">Your visit summaries and prescription documents.</p>
+                    </div>
+                    {/* View toggle */}
+                    <div className="flex items-center gap-1 bg-navy/5 rounded-xl p-1 self-start sm:self-auto">
+                        {(["list", "grid"] as ViewMode[]).map((v) => (
+                            <button key={v} onClick={() => setView(v)}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all capitalize ${view === v ? "bg-white text-navy shadow-sm" : "text-navy/50 hover:text-navy"}`}>
+                                {v === "list" ? (
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
+                                ) : (
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                                )}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
-                {/* Summary strip */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-                    {(["all", "xray", "lab", "report"] as RecordCategory[]).map((cat) => (
-                        <button
-                            key={cat}
-                            onClick={() => setActiveCategory(cat)}
-                            className={`glass-card p-4 rounded-2xl text-center transition-all ${activeCategory === cat ? "ring-2 ring-gold" : ""
-                                }`}
-                        >
-                            <p className="font-fraunces text-3xl font-bold text-navy">
-                                {cat === "all" ? records.length : records.filter((r) => r.category === cat).length}
-                            </p>
-                            <p className="text-navy/50 text-xs mt-1">{CATEGORY_LABELS[cat]}</p>
+                {/* Summary cards */}
+                <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-5 sm:mb-6">
+                    {[
+                        { label: "Total Records", count: records.length, color: "text-navy" },
+                        { label: "Visit Summaries", count: visitCount, color: "text-gold" },
+                        { label: "Prescriptions", count: rxCount, color: "text-blue-600" },
+                    ].map(({ label, count, color }) => (
+                        <div key={label} className="glass-card rounded-2xl p-3 sm:p-4 text-center">
+                            <div className={`text-xl sm:text-2xl font-fraunces font-bold ${color}`}>{count}</div>
+                            <div className="text-navy/50 text-xs mt-1">{label}</div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Filter tabs */}
+                <div className="flex gap-2 mb-4 sm:mb-5 flex-wrap">
+                    {([
+                        { key: "all", label: "All" },
+                        { key: "visit", label: "Visit Summaries" },
+                        { key: "prescription", label: "Prescriptions" },
+                    ] as { key: Filter; label: string }[]).map(({ key, label }) => (
+                        <button key={key} onClick={() => setFilter(key)}
+                            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${filter === key ? "bg-navy text-white" : "bg-navy/8 text-navy/60 hover:text-navy"}`}>
+                            {label}
                         </button>
                     ))}
                 </div>
 
-                {/* Toolbar */}
-                <div className="glass-card rounded-2xl p-6">
-                    <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                        {/* Search */}
-                        <div className="relative flex-1">
-                            <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-navy/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                            </svg>
-                            <input
-                                type="text"
-                                placeholder="Search records..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="form-input pl-10 py-2.5 text-sm"
-                            />
-                        </div>
-                        {/* Category pills */}
-                        <div className="flex items-center gap-1 bg-navy/5 rounded-xl p-1 flex-wrap">
-                            {(Object.keys(CATEGORY_LABELS) as RecordCategory[]).map((cat) => (
-                                <button
-                                    key={cat}
-                                    onClick={() => setActiveCategory(cat)}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${activeCategory === cat ? "bg-navy text-white" : "text-navy/50 hover:text-navy"
-                                        }`}
-                                >
-                                    {CATEGORY_LABELS[cat]}
-                                </button>
-                            ))}
-                        </div>
-                        {/* View toggle */}
-                        <div className="flex items-center gap-1 bg-navy/5 rounded-xl p-1">
-                            {(["grid", "list"] as const).map((mode) => (
-                                <button
-                                    key={mode}
-                                    onClick={() => setViewMode(mode)}
-                                    className={`p-2 rounded-lg transition-all ${viewMode === mode ? "bg-navy text-white" : "text-navy/40 hover:text-navy"}`}
-                                >
-                                    {mode === "grid" ? (
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm0 9.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zm9.75-9.75A2.25 2.25 0 0115.75 3.75H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zm0 9.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-                                        </svg>
-                                    ) : (
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                                        </svg>
-                                    )}
-                                </button>
-                            ))}
-                        </div>
+                {loading ? (
+                    <div className="space-y-3">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <div key={i} className="glass-card rounded-2xl p-5 animate-pulse flex gap-4">
+                                <div className="w-12 h-12 bg-navy/8 rounded-xl flex-shrink-0" />
+                                <div className="flex-1 space-y-2">
+                                    <div className="h-4 bg-navy/8 rounded w-2/3" />
+                                    <div className="h-3 bg-navy/8 rounded w-1/3" />
+                                </div>
+                            </div>
+                        ))}
                     </div>
-
-                    {filtered.length === 0 ? (
-                        <div className="text-center py-16 text-navy/30">
-                            <p className="font-medium">No records found</p>
-                        </div>
-                    ) : viewMode === "grid" ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                            {filtered.map((record) => (
-                                <div key={record.id} className="border border-navy/8 rounded-xl p-5 hover:shadow-md transition-shadow group">
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className={`w-11 h-11 rounded-xl ${record.color} flex items-center justify-center text-xl`}>
-                                            {record.icon}
+                ) : filtered.length === 0 ? (
+                    <div className="glass-card rounded-2xl p-8 sm:p-12 text-center">
+                        <div className="text-5xl mb-4">📋</div>
+                        <h3 className="font-fraunces text-lg font-semibold text-navy mb-2">No Records Found</h3>
+                        <p className="text-navy/50 text-sm">Your medical records will appear here after completed visits.</p>
+                    </div>
+                ) : view === "list" ? (
+                    <div className="space-y-3">
+                        {filtered.map((rec) => {
+                            const isVisit = rec.type === "visit";
+                            const isOpen = expanded === rec.id;
+                            return (
+                                <div key={rec.id} className="glass-card rounded-2xl overflow-hidden">
+                                    <button className="w-full flex items-center gap-4 p-5 text-left hover:bg-navy/3 transition-colors"
+                                        onClick={() => setExpanded(isOpen ? null : rec.id)}>
+                                        <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${isVisit ? "bg-gold/15" : "bg-blue-50"}`}>
+                                            {isVisit ? (
+                                                <svg className="w-5 h-5 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                                            ) : (
+                                                <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                            )}
                                         </div>
-                                        <span className="text-xs text-navy/30 bg-navy/5 px-2 py-1 rounded-lg">{record.format}</span>
-                                    </div>
-                                    <h3 className="font-semibold text-navy text-sm mb-1 group-hover:text-gold transition-colors">{record.title}</h3>
-                                    <p className="text-navy/40 text-xs mb-3">{record.doctor} • {record.date}</p>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-navy/30 text-xs">{record.size}</span>
-                                        <button className="text-xs text-gold font-medium flex items-center gap-1 hover:underline">
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                                            </svg>
-                                            Download
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="space-y-2">
-                            {filtered.map((record) => (
-                                <div key={record.id} className="flex items-center gap-4 p-4 rounded-xl border border-navy/8 hover:bg-navy/5 transition-colors">
-                                    <div className={`w-10 h-10 rounded-xl ${record.color} flex items-center justify-center text-lg flex-shrink-0`}>
-                                        {record.icon}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-navy font-medium text-sm truncate">{record.title}</p>
-                                        <p className="text-navy/40 text-xs">{record.doctor} • {record.date}</p>
-                                    </div>
-                                    <span className="text-navy/30 text-xs hidden sm:block">{record.size}</span>
-                                    <span className="text-xs text-navy/30 bg-navy/5 px-2 py-1 rounded-lg hidden sm:block">{record.format}</span>
-                                    <button className="text-xs text-gold font-medium flex items-center gap-1 flex-shrink-0 hover:underline">
-                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                                        </svg>
-                                        Download
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="font-medium text-navy text-sm truncate">{rec.title}</h4>
+                                            <p className="text-navy/40 text-xs mt-0.5">{rec.doctor} · {fmtDate(rec.date)}</p>
+                                        </div>
+                                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${isVisit ? "bg-gold/10 text-gold" : "bg-blue-50 text-blue-600"}`}>
+                                            {isVisit ? "Visit" : "Prescription"}
+                                        </span>
+                                        <svg className={`w-4 h-4 text-navy/30 transition-transform flex-shrink-0 ${isOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                     </button>
+                                    {isOpen && (
+                                        <div className="px-5 pb-5 border-t border-navy/5 pt-4">
+                                            {isVisit ? (
+                                                <div className="space-y-3">
+                                                    {rec.diagnosis && (
+                                                        <div>
+                                                            <span className="text-xs font-medium text-navy/40 uppercase tracking-wide">Diagnosis</span>
+                                                            <p className="text-navy text-sm mt-1">{rec.diagnosis}</p>
+                                                        </div>
+                                                    )}
+                                                    {rec.treatment && (
+                                                        <div>
+                                                            <span className="text-xs font-medium text-navy/40 uppercase tracking-wide">Treatment</span>
+                                                            <p className="text-navy text-sm mt-1">{rec.treatment}</p>
+                                                        </div>
+                                                    )}
+                                                    {!rec.diagnosis && !rec.treatment && (
+                                                        <p className="text-navy/40 text-sm">No additional details recorded.</p>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-navy/60 text-sm">{rec.fileType?.startsWith("image/") ? "Image file" : "PDF document"}</span>
+                                                    {rec.fileUrl && (
+                                                        <a href={rec.fileUrl} download target="_blank" rel="noopener noreferrer"
+                                                            className="text-gold text-sm font-medium hover:underline flex items-center gap-1">
+                                                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                                            Download
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {filtered.map((rec) => {
+                            const isVisit = rec.type === "visit";
+                            return (
+                                <div key={rec.id} className="glass-card rounded-2xl p-5">
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${isVisit ? "bg-gold/15" : "bg-blue-50"}`}>
+                                        {isVisit ? (
+                                            <svg className="w-5 h-5 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                                        ) : (
+                                            <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                        )}
+                                    </div>
+                                    <h4 className="font-medium text-navy text-sm leading-snug line-clamp-2">{rec.title}</h4>
+                                    <p className="text-navy/40 text-xs mt-1">{fmtDate(rec.date)}</p>
+                                    <p className="text-navy/40 text-xs truncate">{rec.doctor}</p>
+                                    <div className="mt-3 flex items-center justify-between">
+                                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${isVisit ? "bg-gold/10 text-gold" : "bg-blue-50 text-blue-600"}`}>
+                                            {isVisit ? "Visit" : "Prescription"}
+                                        </span>
+                                        {!isVisit && rec.fileUrl && (
+                                            <a href={rec.fileUrl} download target="_blank" rel="noopener noreferrer"
+                                                className="text-gold text-xs font-medium hover:underline">Download</a>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </main>
         </div>
     );

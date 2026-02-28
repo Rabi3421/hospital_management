@@ -7,7 +7,7 @@ import Icon from "@/components/ui/AppIcon";
 const floatingCards = [
 {
   id: "rating",
-  className: "absolute top-[18%] right-[6%] animate-float z-20",
+  className: "absolute top-[18%] right-[6%] animate-float z-20 hidden sm:block",
   content:
   <div className="glass-card rounded-2xl px-4 py-3 shadow-gold flex items-center gap-3 min-w-[180px]">
         <div className="w-10 h-10 bg-gold/15 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -24,7 +24,7 @@ const floatingCards = [
 },
 {
   id: "patients",
-  className: "absolute bottom-[28%] right-[8%] animate-float-2 z-20",
+  className: "absolute bottom-[28%] right-[8%] animate-float-2 z-20 hidden sm:block",
   content:
   <div className="glass-card rounded-2xl px-4 py-3 shadow-card flex items-center gap-3 min-w-[200px]">
         <div className="w-10 h-10 bg-navy/10 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -98,8 +98,8 @@ export default function HeroSection() {
       <div className="absolute inset-0 dot-pattern opacity-30 z-[1]" />
 
       {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-28 pb-20 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-16 sm:pb-20 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Left Content */}
           <div className="lg:col-span-7">
             {/* Badge */}
@@ -116,7 +116,7 @@ export default function HeroSection() {
             {/* Heading */}
             <h1
               ref={headingRef}
-              className="font-display text-5xl md:text-6xl lg:text-7xl text-white font-semibold leading-[1.05] tracking-tight mb-6">
+              className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white font-semibold leading-[1.05] tracking-tight mb-5 sm:mb-6">
               
               Your Smile
               <br />
@@ -129,7 +129,7 @@ export default function HeroSection() {
 
             {/* Subheadline */}
             <p
-              className="text-white/75 text-lg md:text-xl font-light leading-relaxed max-w-xl mb-10 animate-fade-in"
+              className="text-white/75 text-base sm:text-lg md:text-xl font-light leading-relaxed max-w-xl mb-8 sm:mb-10 animate-fade-in"
               style={{ animationDelay: "0.4s", opacity: 0 }}>
               
               Manhattan's premier dental hospital — combining cutting-edge technology
@@ -171,7 +171,7 @@ export default function HeroSection() {
 
             {/* Trust Indicators */}
             <div
-              className="flex flex-wrap items-center gap-6 animate-fade-in"
+              className="flex flex-wrap items-center gap-3 sm:gap-6 animate-fade-in"
               style={{ animationDelay: "0.7s", opacity: 0 }}>
               
               {[

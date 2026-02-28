@@ -140,14 +140,14 @@ export default function TeamSection() {
   }, []);
 
   return (
-    <section id="team" className="py-24 lg:py-32 bg-cream-dark">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+    <section id="team" className="py-16 sm:py-24 lg:py-32 bg-cream-dark">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div ref={titleRef} className="text-center mb-16">
           <span className="inline-block text-xs font-semibold tracking-[0.2em] uppercase text-gold mb-4">
             Meet Our Specialists
           </span>
-          <h2 className="font-display text-4xl md:text-5xl font-semibold text-navy tracking-tight leading-[1.1] mb-4">
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold text-navy tracking-tight leading-[1.1] mb-4">
             Doctors Who Care
             <br />
             <em className="font-light italic text-navy/60">As Much As You Do.</em>
@@ -170,7 +170,7 @@ export default function TeamSection() {
           <p className="text-center text-xs font-semibold tracking-[0.18em] uppercase text-navy/40 mb-6">
             Accreditations & Memberships
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 md:gap-12">
             {[
             "American Dental Association",
             "New York State Dental Association",

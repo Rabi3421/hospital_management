@@ -55,7 +55,7 @@ export default function AnalyticsPage() {
                     {kpis.map(({ label, value, change, up }) => (
                         <div key={label} className="glass-card rounded-2xl p-5">
                             <p className="text-navy/40 text-xs mb-2">{label}</p>
-                            <p className="font-fraunces text-2xl font-bold text-navy">{value}</p>
+                            <p className="font-fraunces text-xl sm:text-2xl font-bold text-navy">{value}</p>
                             <span className={`text-xs font-medium ${up ? "text-green-600" : "text-red-500"}`}>
                                 {change} vs last year
                             </span>

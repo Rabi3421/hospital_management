@@ -59,14 +59,14 @@ export default function AdminReportsPage() {
     return (
         <div className="flex w-full">
             <DashboardSidebar navItems={adminNavItems} title="DentalCare" subtitle="Admin Panel" />
-            <main className="flex-1 min-w-0 p-6 lg:p-8 pt-16 lg:pt-8">
+            <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8 overflow-x-hidden">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 sm:mb-8">
                     <div>
-                        <h1 className="font-fraunces text-2xl lg:text-3xl font-bold text-navy">Reports & Analytics</h1>
-                        <p className="text-navy/50 mt-1">Appointment trends and clinic performance.</p>
+                        <h1 className="font-fraunces text-xl sm:text-2xl lg:text-3xl font-bold text-navy">Reports &amp; Analytics</h1>
+                        <p className="text-navy/50 text-sm mt-1">Appointment trends and clinic performance.</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                         {RANGE_OPTIONS.map((o) => (
                             <button key={o.value} onClick={() => setRange(o.value)} className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${range === o.value ? "bg-navy text-white" : "bg-navy/5 text-navy/60 hover:bg-navy/10"}`}>
                                 {o.label}
@@ -76,13 +76,13 @@ export default function AdminReportsPage() {
                 </div>
 
                 {loading ? (
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 animate-pulse">
-                        {Array.from({ length: 8 }).map((_, i) => <div key={i} className="glass-card rounded-2xl p-5 h-24" />)}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-5 sm:mb-6 animate-pulse">
+                        {Array.from({ length: 8 }).map((_, i) => <div key={i} className="glass-card rounded-2xl p-4 sm:p-5 h-20 sm:h-24" />)}
                     </div>
                 ) : data ? (
                     <>
                         {/* Summary cards */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-5 sm:mb-6">
                             {[
                                 { label: "Total Appointments", value: data.summary.total, color: "text-navy" },
                                 { label: "Completed", value: data.summary.completed, color: "text-green-600" },
@@ -93,15 +93,15 @@ export default function AdminReportsPage() {
                                 { label: "Completion Rate", value: `${completionRate}%`, color: "text-green-600" },
                                 { label: "Cancellation Rate", value: `${cancellationRate}%`, color: "text-red-500" },
                             ].map(({ label, value, color }) => (
-                                <div key={label} className="glass-card rounded-2xl p-5">
-                                    <p className={`font-fraunces text-2xl font-bold ${color}`}>{value}</p>
+                                <div key={label} className="glass-card rounded-2xl p-3 sm:p-5">
+                                    <p className={`font-fraunces text-xl sm:text-2xl font-bold ${color}`}>{value}</p>
                                     <p className="text-navy/50 text-xs mt-1">{label}</p>
                                 </div>
                             ))}
                         </div>
 
                         {/* Charts row */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-3 sm:mb-4">
                             {/* Daily trend */}
                             <div className="glass-card rounded-2xl p-5 lg:col-span-2">
                                 <h3 className="font-fraunces font-semibold text-navy mb-4">Daily Appointments</h3>

@@ -363,10 +363,10 @@ export default function AppointmentsPageContent() {
             )}
 
             {/* Hero */}
-            <section className="relative pt-32 pb-20 overflow-hidden bg-navy">
+            <section className="relative pt-28 sm:pt-32 pb-16 sm:pb-20 overflow-hidden bg-navy">
                 <div className="absolute inset-0 dot-pattern opacity-20" />
                 <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-cream to-transparent" />
-                <div ref={heroRef} className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 text-center">
+                <div ref={heroRef} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <span className="inline-flex items-center gap-2 bg-gold/15 border border-gold/30 rounded-full px-4 py-1.5 mb-6">
                         <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
                         <span className="text-gold text-xs font-semibold tracking-widest uppercase">Instant Slot Booking — Auto Confirmed</span>
@@ -393,7 +393,7 @@ export default function AppointmentsPageContent() {
             </section>
 
             {/* Main */}
-            <section className="py-20 px-6 lg:px-8 bg-cream">
+            <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-cream">
                 <div className="max-w-7xl mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                         {/* Form */}
