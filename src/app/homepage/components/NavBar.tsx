@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Icon from "@/components/ui/AppIcon";
+import { useAuth } from "@/context/AuthContext";
 
 // page: true → navigates to a new page; page: false → smooth-scrolls on homepage
 const navLinks = [
@@ -17,6 +18,7 @@ const navLinks = [
 export default function NavBar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -118,6 +120,31 @@ export default function NavBar() {
                 <Icon name="PhoneIcon" size={16} variant="solid" className={scrolled ? "text-gold" : "text-gold-light"} />
                 (212) 555-0190
               </a>
+              {user ? (
+                <Link
+                  href={`/dashboard/${user.role === "super_admin" ? "super-admin" : user.role === "admin" ? "admin" : "user"}`}
+                  className={`flex items-center gap-1.5 text-sm font-medium px-4 py-2.5 rounded-full border transition-all ${
+                    scrolled
+                      ? "border-navy/20 text-navy hover:bg-navy/5"
+                      : "border-white/30 text-white hover:bg-white/10"
+                  }`}
+                >
+                  <Icon name="UserCircleIcon" size={16} variant="solid" className={scrolled ? "text-navy" : "text-white"} />
+                  Dashboard
+                </Link>
+              ) : (
+                <Link
+                  href="/auth/login"
+                  className={`flex items-center gap-1.5 text-sm font-medium px-4 py-2.5 rounded-full border transition-all ${
+                    scrolled
+                      ? "border-navy/20 text-navy hover:bg-navy/5"
+                      : "border-white/30 text-white hover:bg-white/10"
+                  }`}
+                >
+                  <Icon name="ArrowRightOnRectangleIcon" size={16} className={scrolled ? "text-navy" : "text-white"} />
+                  Login
+                </Link>
+              )}
               <Link
                 href="/appointments"
                 className="btn-gold px-5 py-2.5 rounded-full text-sm font-semibold shadow-gold"
@@ -191,6 +218,25 @@ export default function NavBar() {
               <Icon name="PhoneIcon" size={16} variant="solid" className="text-gold" />
               (212) 555-0190
             </a>
+            {user ? (
+              <Link
+                href={`/dashboard/${user.role === "super_admin" ? "super-admin" : user.role === "admin" ? "admin" : "user"}`}
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center justify-center gap-2 w-full border border-navy/20 text-navy py-3 rounded-full text-sm font-semibold hover:bg-navy/5 transition-colors text-center"
+              >
+                <Icon name="UserCircleIcon" size={16} variant="solid" className="text-navy" />
+                Go to Dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/auth/login"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center justify-center gap-2 w-full border border-navy/20 text-navy py-3 rounded-full text-sm font-semibold hover:bg-navy/5 transition-colors text-center"
+              >
+                <Icon name="ArrowRightOnRectangleIcon" size={16} className="text-navy" />
+                Login
+              </Link>
+            )}
             <Link
               href="/appointments"
               onClick={() => setMobileOpen(false)}

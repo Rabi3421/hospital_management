@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "@/context/AuthContext";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 
 const navItems = [
@@ -55,37 +56,108 @@ type FilterTab = "all" | "upcoming" | "completed" | "cancelled";
 
 const STATUS_STYLES: Record<string, string> = {
     upcoming: "bg-blue-50 text-blue-600",
+    confirmed: "bg-blue-50 text-blue-600",
     completed: "bg-green-100 text-green-700",
     cancelled: "bg-red-50 text-red-500",
-    "in-progress": "bg-gold/15 text-gold",
+    pending: "bg-gold/15 text-gold",
 };
 
-const appointments = [
-    { id: 1, doctor: "Dr. Sarah Johnson", specialty: "General Dentistry", date: "Feb 10, 2026", time: "10:30 AM", type: "General Checkup", status: "upcoming", avatar: "SJ" },
-    { id: 2, doctor: "Dr. Emily Chen", specialty: "Orthodontics", date: "Jan 28, 2026", time: "02:00 PM", type: "Braces Adjustment", status: "completed", avatar: "EC" },
-    { id: 3, doctor: "Dr. James Wilson", specialty: "Oral Surgery", date: "Jan 15, 2026", time: "09:00 AM", type: "Wisdom Tooth Consult", status: "completed", avatar: "JW" },
-    { id: 4, doctor: "Dr. Robert Kim", specialty: "Cosmetic Dentistry", date: "Dec 20, 2025", time: "11:30 AM", type: "Whitening Session", status: "completed", avatar: "RK" },
-    { id: 5, doctor: "Dr. Sarah Johnson", specialty: "General Dentistry", date: "Mar 5, 2026", time: "03:30 PM", type: "Cavity Filling", status: "upcoming", avatar: "SJ" },
-    { id: 6, doctor: "Dr. Emily Chen", specialty: "Orthodontics", date: "Nov 10, 2025", time: "10:00 AM", type: "Retainer Checkup", status: "cancelled", avatar: "EC" },
-];
+interface Appointment {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    service: string;
+    doctorPreference: string;
+    preferredDate: string;
+    preferredTime: string;
+    status: string;
+    createdAt: string;
+}
+
+function getInitials(doctorPreference: string): string {
+    const name = doctorPreference.replace(/Dr\.\s*/i, "").split(" —")[0].trim();
+    return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "DC";
+}
+
+function formatDate(dateStr: string): string {
+    if (!dateStr) return "—";
+    const d = new Date(dateStr + "T00:00:00");
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
 
 export default function AppointmentsPage() {
+    const { accessToken, isLoading: authLoading } = useAuth();
+    const [appointments, setAppointments] = useState<Appointment[]>([]);
+    const [fetching, setFetching] = useState(true);
     const [activeTab, setActiveTab] = useState<FilterTab>("all");
     const [searchQuery, setSearchQuery] = useState("");
+    const [cancellingId, setCancellingId] = useState<string | null>(null);
+
+    const fetchAppointments = useCallback(async () => {
+        setFetching(true);
+        try {
+            const res = await fetch("/api/appointments", {
+                credentials: "include",
+                headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+            });
+            if (res.ok) {
+                const json = await res.json();
+                setAppointments(json.data?.appointments ?? []);
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setFetching(false);
+        }
+    }, [accessToken]);
+
+    useEffect(() => {
+        if (!authLoading) fetchAppointments();
+    }, [authLoading, fetchAppointments]);
+
+    async function handleCancel(id: string) {
+        if (!confirm("Cancel this appointment?")) return;
+        setCancellingId(id);
+        try {
+            const res = await fetch(`/api/appointments/${id}/cancel`, {
+                method: "PATCH",
+                credentials: "include",
+                headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+            });
+            if (res.ok) {
+                setAppointments((prev) =>
+                    prev.map((a) => a._id === id ? { ...a, status: "cancelled" } : a)
+                );
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setCancellingId(null);
+        }
+    }
+
+    // Map status to filterable tab key
+    function tabKey(status: string): FilterTab {
+        if (status === "pending" || status === "confirmed") return "upcoming";
+        if (status === "completed") return "completed";
+        if (status === "cancelled") return "cancelled";
+        return "upcoming";
+    }
 
     const tabs: { key: FilterTab; label: string; count: number }[] = [
         { key: "all", label: "All", count: appointments.length },
-        { key: "upcoming", label: "Upcoming", count: appointments.filter((a) => a.status === "upcoming").length },
+        { key: "upcoming", label: "Upcoming", count: appointments.filter((a) => tabKey(a.status) === "upcoming").length },
         { key: "completed", label: "Completed", count: appointments.filter((a) => a.status === "completed").length },
         { key: "cancelled", label: "Cancelled", count: appointments.filter((a) => a.status === "cancelled").length },
     ];
 
     const filtered = appointments.filter((a) => {
-        const matchesTab = activeTab === "all" || a.status === activeTab;
+        const matchesTab = activeTab === "all" || tabKey(a.status) === activeTab;
         const matchesSearch =
             searchQuery === "" ||
-            a.doctor.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            a.type.toLowerCase().includes(searchQuery.toLowerCase());
+            a.doctorPreference.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            a.service.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesTab && matchesSearch;
     });
 
@@ -114,13 +186,13 @@ export default function AppointmentsPage() {
                 {/* Summary cards */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
                     {[
-                        { label: "Total", value: appointments.length, color: "bg-navy text-white" },
-                        { label: "Upcoming", value: appointments.filter((a) => a.status === "upcoming").length, color: "bg-blue-50 text-blue-600" },
-                        { label: "Completed", value: appointments.filter((a) => a.status === "completed").length, color: "bg-green-50 text-green-700" },
-                        { label: "Cancelled", value: appointments.filter((a) => a.status === "cancelled").length, color: "bg-red-50 text-red-500" },
+                        { label: "Total", value: fetching ? "—" : appointments.length, color: "text-navy" },
+                        { label: "Upcoming", value: fetching ? "—" : appointments.filter((a) => tabKey(a.status) === "upcoming").length, color: "text-blue-600" },
+                        { label: "Completed", value: fetching ? "—" : appointments.filter((a) => a.status === "completed").length, color: "text-green-700" },
+                        { label: "Cancelled", value: fetching ? "—" : appointments.filter((a) => a.status === "cancelled").length, color: "text-red-500" },
                     ].map((card) => (
                         <div key={card.label} className="glass-card p-4 rounded-2xl text-center">
-                            <p className={`font-fraunces text-3xl font-bold ${card.color.split(" ")[1]}`}>{card.value}</p>
+                            <p className={`font-fraunces text-3xl font-bold ${card.color}`}>{card.value}</p>
                             <p className="text-navy/50 text-sm mt-1">{card.label}</p>
                         </div>
                     ))}
@@ -163,46 +235,66 @@ export default function AppointmentsPage() {
                     </div>
 
                     {/* Appointment cards */}
-                    {filtered.length === 0 ? (
+                    {fetching ? (
+                        <div className="space-y-3">
+                            {[1, 2, 3].map((n) => (
+                                <div key={n} className="animate-pulse flex gap-4 p-4 rounded-xl border border-navy/8">
+                                    <div className="w-11 h-11 rounded-full bg-navy/10 flex-shrink-0" />
+                                    <div className="flex-1 space-y-2">
+                                        <div className="h-3 bg-navy/10 rounded w-1/3" />
+                                        <div className="h-3 bg-navy/10 rounded w-1/2" />
+                                    </div>
+                                    <div className="h-3 bg-navy/10 rounded w-20 self-center" />
+                                </div>
+                            ))}
+                        </div>
+                    ) : filtered.length === 0 ? (
                         <div className="text-center py-16 text-navy/30">
                             <svg className="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
                             </svg>
                             <p className="font-medium">No appointments found</p>
+                            <a href="/appointments" className="mt-4 inline-block text-sm text-gold hover:underline">Book your first appointment →</a>
                         </div>
                     ) : (
                         <div className="space-y-3">
                             {filtered.map((apt) => (
                                 <div
-                                    key={apt.id}
+                                    key={apt._id}
                                     className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl border border-navy/8 hover:bg-navy/5 transition-colors"
                                 >
                                     {/* Avatar */}
                                     <div className="w-11 h-11 rounded-full bg-navy flex items-center justify-center flex-shrink-0">
-                                        <span className="text-white text-sm font-semibold">{apt.avatar}</span>
+                                        <span className="text-white text-sm font-semibold">{getInitials(apt.doctorPreference)}</span>
                                     </div>
 
                                     {/* Info */}
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-navy font-semibold text-sm">{apt.doctor}</p>
-                                        <p className="text-navy/50 text-xs">{apt.specialty} • {apt.type}</p>
+                                        <p className="text-navy font-semibold text-sm">
+                                            {apt.doctorPreference === "No Preference" ? "Any Available Doctor" : apt.doctorPreference.split(" —")[0]}
+                                        </p>
+                                        <p className="text-navy/50 text-xs">{apt.service}</p>
                                     </div>
 
                                     {/* Date/Time */}
                                     <div className="text-sm text-navy/60 flex-shrink-0">
-                                        <p className="font-medium text-navy">{apt.date}</p>
-                                        <p className="text-xs">{apt.time}</p>
+                                        <p className="font-medium text-navy">{formatDate(apt.preferredDate)}</p>
+                                        <p className="text-xs">{apt.preferredTime}</p>
                                     </div>
 
                                     {/* Status badge */}
                                     <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize flex-shrink-0 ${STATUS_STYLES[apt.status] ?? "bg-navy/10 text-navy"}`}>
-                                        {apt.status}
+                                        {apt.status === "pending" ? "Pending Confirmation" : apt.status}
                                     </span>
 
-                                    {/* Action */}
-                                    {apt.status === "upcoming" && (
-                                        <button className="text-xs text-navy/40 hover:text-red-500 transition-colors flex-shrink-0">
-                                            Cancel
+                                    {/* Cancel action */}
+                                    {(apt.status === "pending" || apt.status === "confirmed") && (
+                                        <button
+                                            onClick={() => handleCancel(apt._id)}
+                                            disabled={cancellingId === apt._id}
+                                            className="text-xs text-navy/40 hover:text-red-500 transition-colors flex-shrink-0 disabled:opacity-40"
+                                        >
+                                            {cancellingId === apt._id ? "Cancelling…" : "Cancel"}
                                         </button>
                                     )}
                                 </div>

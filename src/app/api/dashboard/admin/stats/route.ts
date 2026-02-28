@@ -1,7 +1,9 @@
 import { NextRequest } from "next/server";
 import { withAuth, apiSuccess, apiError } from "@/lib/api-auth";
-import connectDB from "@/lib/mongodb";
+import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
+import Appointment from "@/models/Appointment";
+import Department from "@/models/Department";
 import type { JWTPayload } from "@/types/auth";
 
 /**
@@ -13,42 +15,78 @@ export const GET = withAuth(
         try {
             await connectDB();
 
-            // Real user count from DB
-            const totalUsers = await User.countDocuments({ role: "user", isActive: true });
-            const totalAdmins = await User.countDocuments({ role: "admin", isActive: true });
+            const todayStart = new Date();
+            todayStart.setHours(0, 0, 0, 0);
+            const todayEnd = new Date();
+            todayEnd.setHours(23, 59, 59, 999);
+            const todayStr = todayStart.toISOString().split("T")[0];
 
-            const stats = {
+            const [
                 totalUsers,
                 totalAdmins,
-                totalAppointmentsToday: 24,
-                pendingAppointments: 7,
-                totalDoctors: 8,
-                activeDepartments: 6,
-                appointmentsTrend: [
-                    { day: "Mon", appointments: 18 },
-                    { day: "Tue", appointments: 22 },
-                    { day: "Wed", appointments: 15 },
-                    { day: "Thu", appointments: 28 },
-                    { day: "Fri", appointments: 24 },
-                    { day: "Sat", appointments: 12 },
-                    { day: "Sun", appointments: 6 },
-                ],
-                departmentLoad: [
+                totalAppointmentsToday,
+                pendingAppointments,
+                activeDepartments,
+                recentAppointments,
+            ] = await Promise.all([
+                User.countDocuments({ role: "user", isActive: true }),
+                User.countDocuments({ role: "admin", isActive: true }),
+                Appointment.countDocuments({ preferredDate: todayStr }),
+                Appointment.countDocuments({ status: "pending" }),
+                Department.countDocuments({ isActive: true }),
+                Appointment.find()
+                    .sort({ createdAt: -1 })
+                    .limit(5)
+                    .lean(),
+            ]);
+
+            // Weekly trend (last 7 days)
+            const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            const weeklyRaw = await Appointment.aggregate([
+                { $match: { createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } } },
+                { $group: { _id: { $dayOfWeek: "$createdAt" }, count: { $sum: 1 } } },
+            ]);
+            const weekMap: Record<number, number> = {};
+            weeklyRaw.forEach((w) => { weekMap[w._id] = w.count; });
+            const appointmentsTrend = days.map((day, i) => ({
+                day,
+                appointments: weekMap[i + 1] ?? 0,
+            }));
+
+            // Department appointment load
+            const deptRaw = await Appointment.aggregate([
+                { $match: { status: { $in: ["pending", "confirmed", "completed"] } } },
+                { $group: { _id: "$service", value: { $sum: 1 } } },
+                { $sort: { value: -1 } },
+                { $limit: 6 },
+            ]);
+            const departmentLoad = deptRaw.map((d) => ({ name: d._id || "Other", value: d.value }));
+
+            return apiSuccess({
+                totalUsers,
+                totalAdmins,
+                totalAppointmentsToday,
+                pendingAppointments,
+                totalDoctors: totalAdmins, // admins act as staff
+                activeDepartments,
+                appointmentsTrend,
+                departmentLoad: departmentLoad.length ? departmentLoad : [
                     { name: "General", value: 35 },
                     { name: "Orthodontics", value: 25 },
                     { name: "Pediatric", value: 15 },
                     { name: "Oral Surgery", value: 10 },
                     { name: "Cosmetic", value: 15 },
                 ],
-                recentAppointments: [
-                    { id: 1, patient: "John Smith", doctor: "Dr. Sarah Johnson", time: "09:00 AM", status: "completed" },
-                    { id: 2, patient: "Emma Wilson", doctor: "Dr. James Chen", time: "10:30 AM", status: "in-progress" },
-                    { id: 3, patient: "Michael Brown", doctor: "Dr. Emily Davis", time: "11:00 AM", status: "pending" },
-                    { id: 4, patient: "Lisa Anderson", doctor: "Dr. Robert Kim", time: "02:00 PM", status: "pending" },
-                ],
-            };
-
-            return apiSuccess(stats);
+                recentAppointments: recentAppointments.map((a) => ({
+                    id: a._id.toString(),
+                    patient: `${a.firstName} ${a.lastName}`,
+                    doctor: a.doctorPreference,
+                    time: a.preferredTime,
+                    date: a.preferredDate,
+                    status: a.status,
+                    service: a.service,
+                })),
+            });
         } catch (err) {
             console.error("[admin/stats]", err);
             return apiError("Failed to fetch admin stats", 500);
