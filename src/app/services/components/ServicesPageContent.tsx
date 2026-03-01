@@ -319,7 +319,7 @@ export default function ServicesPageContent() {
                             className="flex items-center gap-2 text-white/80 hover:text-white text-sm font-medium transition-colors"
                         >
                             <Icon name="PhoneIcon" size={16} className="text-gold" variant="solid" />
-                            (212) 555-0190
+                            +91 7008355987
                         </a>
                     </div>
                 </div>

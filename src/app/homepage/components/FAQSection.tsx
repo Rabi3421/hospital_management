@@ -10,7 +10,7 @@ const faqs = [
   },
   {
     q: "How soon can I get an appointment?",
-    a: "New patient appointments are typically available within 2–3 business days. For dental emergencies, we offer same-day appointments — call our emergency line at (212) 555-0190 and we'll see you as soon as possible, including evenings and weekends.",
+    a: "New patient appointments are typically available within 2–3 business days. For dental emergencies, we offer same-day appointments — call our emergency line at +91 7008355987 and we'll see you as soon as possible, including evenings and weekends.",
   },
   {
     q: "Is teeth whitening safe?",
@@ -138,7 +138,7 @@ export default function FAQSection() {
               className="flex items-center gap-2 btn-primary px-6 py-3 rounded-full text-sm font-semibold"
             >
               <Icon name="PhoneIcon" size={16} variant="solid" />
-              <span>Call (212) 555-0190</span>
+              <span>Call +91 7008355987</span>
             </a>
             <a
               href="mailto:hello@dentalcarenyc.com"

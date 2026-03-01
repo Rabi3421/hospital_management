@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Icon from "@/components/ui/AppIcon";
 import { useAuth } from "@/context/AuthContext";
 
@@ -19,6 +20,16 @@ export default function NavBar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user } = useAuth();
+  const router = useRouter();
+
+  const handleBookAppointment = () => {
+    setMobileOpen(false);
+    if (user) {
+      router.push("/appointments");
+    } else {
+      router.push("/auth/login?next=/appointments");
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -118,7 +129,7 @@ export default function NavBar() {
                   }`}
               >
                 <Icon name="PhoneIcon" size={16} variant="solid" className={scrolled ? "text-gold" : "text-gold-light"} />
-                (212) 555-0190
+                +91 7008355987
               </a>
               {user ? (
                 <Link
@@ -145,12 +156,6 @@ export default function NavBar() {
                   Login
                 </Link>
               )}
-              <Link
-                href="/appointments"
-                className="btn-gold px-5 py-2.5 rounded-full text-sm font-semibold shadow-gold"
-              >
-                <span>Book Appointment</span>
-              </Link>
             </div>
 
             {/* Mobile Toggle */}
@@ -216,7 +221,7 @@ export default function NavBar() {
               className="flex items-center gap-2 text-sm text-navy font-medium"
             >
               <Icon name="PhoneIcon" size={16} variant="solid" className="text-gold" />
-              (212) 555-0190
+              +91 7008355987
             </a>
             {user ? (
               <Link
@@ -237,13 +242,6 @@ export default function NavBar() {
                 Login
               </Link>
             )}
-            <Link
-              href="/appointments"
-              onClick={() => setMobileOpen(false)}
-              className="block w-full btn-gold py-3 rounded-full text-sm font-semibold shadow-gold text-center"
-            >
-              <span>Book Appointment</span>
-            </Link>
           </div>
         </div>
       </div>

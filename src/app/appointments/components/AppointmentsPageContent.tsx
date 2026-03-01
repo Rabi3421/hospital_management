@@ -656,7 +656,7 @@ export default function AppointmentsPageContent() {
                                 </p>
                                 <a href="tel:+12125550191" className="flex items-center gap-2 bg-red-600 text-white px-4 py-3 rounded-xl text-sm font-semibold hover:bg-red-700 transition-colors">
                                     <Icon name="PhoneIcon" size={14} variant="solid" />
-                                    (212) 555-0191 — Emergency
+                                    +91 7008355987 — Emergency
                                 </a>
                             </div>
                         </div>

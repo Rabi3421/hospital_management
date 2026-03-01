@@ -165,7 +165,7 @@ export default function PageFooter() {
                                     href="tel:+12125550190"
                                     className="text-white/50 hover:text-gold text-sm transition-colors"
                                 >
-                                    (212) 555-0190
+                                    +91 7008355987
                                 </a>
                             </li>
                             <li className="flex items-center gap-3">

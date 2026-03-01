@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import AppImage from "@/components/ui/AppImage";
 import Icon from "@/components/ui/AppIcon";
+import { useAuth } from "@/context/AuthContext";
 
 const floatingCards = [
 {
@@ -64,6 +66,16 @@ const floatingCards = [
 
 export default function HeroSection() {
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+
+  const handleBookAppointment = () => {
+    if (!isLoading && user) {
+      router.push("/appointments");
+    } else {
+      router.push("/auth/login?next=/appointments");
+    }
+  };
 
   useEffect(() => {
     const el = headingRef.current;
@@ -143,26 +155,14 @@ export default function HeroSection() {
               style={{ animationDelay: "0.55s", opacity: 0 }}>
               
               <button
-                onClick={() => {
-                  const el = document.querySelector("#contact");
-                  if (el) {
-                    const top = el.getBoundingClientRect().top + window.scrollY - 80;
-                    window.scrollTo({ top, behavior: "smooth" });
-                  }
-                }}
+                onClick={handleBookAppointment}
                 className="btn-gold px-8 py-4 rounded-full text-base font-semibold shadow-gold flex items-center justify-center gap-2 group">
                 
-                <span>Book Free Consultation</span>
+                <span>Book Appointment</span>
                 <Icon name="ArrowRightIcon" size={18} className="group-hover:translate-x-1 transition-transform" />
               </button>
               <button
-                onClick={() => {
-                  const el = document.querySelector("#services");
-                  if (el) {
-                    const top = el.getBoundingClientRect().top + window.scrollY - 80;
-                    window.scrollTo({ top, behavior: "smooth" });
-                  }
-                }}
+                onClick={() => router.push("/services")}
                 className="flex items-center justify-center gap-2 px-8 py-4 rounded-full border border-white/30 text-white font-medium text-base hover:bg-white/10 transition-all backdrop-blur-sm">
                 
                 <span>Explore Services</span>
