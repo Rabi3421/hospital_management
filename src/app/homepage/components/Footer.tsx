@@ -121,7 +121,7 @@ export default function Footer() {
               <div className="flex items-center gap-3">
                 <Icon name="PhoneIcon" size={16} variant="solid" className="text-gold flex-shrink-0" />
                 <a href="tel:+12125550190" className="text-white/50 hover:text-gold text-sm transition-colors">
-                  (212) 555-0190
+                  +91 7008355987
                 </a>
               </div>
               <div className="flex items-center gap-3">
@@ -146,7 +146,7 @@ export default function Footer() {
                 className="text-white font-semibold text-sm hover:text-gold transition-colors flex items-center gap-2"
               >
                 <Icon name="PhoneIcon" size={14} variant="solid" className="text-gold" />
-                Call (212) 555-0911 — 24/7
+                Call +91 7008355987 — 24/7
               </a>
             </div>
           </div>

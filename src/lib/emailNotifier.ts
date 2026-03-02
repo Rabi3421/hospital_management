@@ -87,7 +87,7 @@ export function buildReminderEmail(data: {
       ${data.queueNumber ? `<tr><td style="color:#888;font-size:13px;padding:6px 0">Queue #</td><td style="font-weight:700;color:#d4a843;font-size:18px">#${data.queueNumber}</td></tr>` : ""}
     </table>
   </div>
-  <p style="color:#888;font-size:12px;text-align:center">Questions? Call us at (212) 555-0191</p>
+  <p style="color:#888;font-size:12px;text-align:center">Questions? Call us at +91 7008355987</p>
 </div>`,
     };
 }
@@ -161,7 +161,7 @@ export function buildAppointmentDoneEmail(data: {
       View Full Summary & Prescriptions →
     </a>
   </div>
-  <p style="color:#888;font-size:12px;text-align:center">Questions? Call us at (212) 555-0191</p>
+  <p style="color:#888;font-size:12px;text-align:center">Questions? Call us at +91 7008355987</p>
 </div>`,
     };
 }

@@ -34,9 +34,9 @@ const contactInfo = [
   {
     icon: "PhoneIcon",
     label: "Phone",
-    value: "(212) 555-0190",
-    sub: "Emergency: (212) 555-0911",
-    href: "tel:+12125550190",
+    value: "+91 7008355987",
+    sub: "Emergency: +91 7008355987",
+    href: "tel:+917008355987",
   },
   {
     icon: "EnvelopeIcon",
@@ -271,7 +271,7 @@ export default function ContactSection() {
                         required
                         value={form.phone}
                         onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                        placeholder="(212) 000-0000"
+                        placeholder="+91 7008355987"
                         className="w-full px-4 py-3 bg-cream rounded-xl border border-cream-dark form-input text-navy text-sm font-medium placeholder:text-navy/30"
                       />
                     </div>

@@ -3,6 +3,8 @@
 import { useState, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import PageNavBar from "@/components/shared/PageNavBar";
+import PageFooter from "@/components/shared/PageFooter";
 import type { Role } from "@/types/auth";
 import { useAuth } from "@/context/AuthContext";
 
@@ -69,7 +71,9 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-cream flex">
+        <>
+            <PageNavBar />
+            <div className="min-h-screen bg-cream flex">
             {/* Left decorative panel */}
             <div className="hidden lg:flex lg:w-1/2 bg-navy flex-col items-center justify-center p-12 relative overflow-hidden">
                 <div className="absolute inset-0 dot-pattern opacity-10" />
@@ -215,6 +219,8 @@ export default function LoginPage() {
                     </p>
                 </div>
             </div>
-        </div>
+            </div>
+            <PageFooter />
+        </>
     );
 }

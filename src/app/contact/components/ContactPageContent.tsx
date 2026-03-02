@@ -25,11 +25,11 @@ const contactCards = [
         icon: "PhoneIcon",
         title: "Call or Text Us",
         lines: [
-            "Main: (212) 555-0190",
-            "Emergency: (212) 555-0191",
-            "Fax: (212) 555-0192",
+            "Main: +91 7008355987",
+            "Emergency: +91 7008355987",
+            "Fax: +91 7008355987",
         ],
-        action: { label: "Call Now", href: "tel:+12125550190" },
+        action: { label: "Call Now", href: "tel:+917008355987" },
         bg: "bg-white",
         iconBg: "bg-gold/10",
         iconColor: "text-gold",
@@ -422,7 +422,7 @@ export default function ContactPageContent() {
                                     className="flex items-center gap-2 text-red-700 text-sm font-bold"
                                 >
                                     <Icon name="PhoneIcon" size={14} variant="solid" className="text-red-500" />
-                                    (212) 555-0191
+                                    +91 7008355987
                                 </a>
                             </div>
                         </RevealItem>
@@ -484,7 +484,7 @@ export default function ContactPageContent() {
                             className="flex items-center gap-2 text-white/70 hover:text-white text-sm font-medium transition-colors"
                         >
                             <Icon name="PhoneIcon" size={14} className="text-gold" variant="solid" />
-                            (212) 555-0190
+                            +91 7008355987
                         </a>
                     </div>
                 </div>
