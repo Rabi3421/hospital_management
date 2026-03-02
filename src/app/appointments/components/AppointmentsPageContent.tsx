@@ -363,29 +363,29 @@ export default function AppointmentsPageContent() {
             )}
 
             {/* Hero */}
-            <section className="relative pt-28 sm:pt-32 pb-16 sm:pb-20 overflow-hidden bg-navy">
+            <section className="relative pt-24 sm:pt-32 pb-12 sm:pb-20 overflow-hidden bg-navy">
                 <div className="absolute inset-0 dot-pattern opacity-20" />
                 <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-cream to-transparent" />
                 <div ref={heroRef} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <span className="inline-flex items-center gap-2 bg-gold/15 border border-gold/30 rounded-full px-4 py-1.5 mb-6">
-                        <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
-                        <span className="text-gold text-xs font-semibold tracking-widest uppercase">Instant Slot Booking — Auto Confirmed</span>
+                    <span className="inline-flex items-center gap-2 bg-gold/15 border border-gold/30 rounded-full px-3 py-1.5 mb-5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse flex-shrink-0" />
+                        <span className="text-gold text-[10px] sm:text-xs font-semibold tracking-wider uppercase">Instant Slot Booking — Auto Confirmed</span>
                     </span>
-                    <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-semibold text-white leading-tight mb-5">
+                    <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-semibold text-white leading-tight mb-4">
                         Book Your <span className="text-gold-gradient italic">Appointment</span>
                     </h1>
-                    <p className="text-white/60 text-lg max-w-2xl mx-auto leading-relaxed mb-6">
+                    <p className="text-white/60 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed mb-5 px-2">
                         Pick an available slot, get an instant queue number, and walk in with confidence.
                     </p>
-                    <div className="flex flex-wrap justify-center gap-4 text-sm">
+                    <div className="flex flex-wrap justify-center gap-2 sm:gap-4 text-sm">
                         {[
                             { icon: "CheckCircleIcon", text: "Instant confirmation" },
                             { icon: "CheckCircleIcon", text: "Queue number assigned" },
                             { icon: "CheckCircleIcon", text: "Cancel anytime" },
                         ].map((item) => (
-                            <div key={item.text} className="flex items-center gap-1.5 text-white/60">
-                                <Icon name={item.icon} size={16} className="text-gold" variant="solid" />
-                                {item.text}
+                            <div key={item.text} className="flex items-center gap-1.5 text-white/70 bg-white/8 rounded-full px-3 py-1">
+                                <Icon name={item.icon} size={13} className="text-gold" variant="solid" />
+                                <span className="text-xs sm:text-sm">{item.text}</span>
                             </div>
                         ))}
                     </div>
@@ -393,13 +393,14 @@ export default function AppointmentsPageContent() {
             </section>
 
             {/* Main */}
-            <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-cream">
+            <section className="py-10 sm:py-20 px-4 sm:px-6 lg:px-8 bg-cream">
                 <div className="max-w-7xl mx-auto">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
                         {/* Form */}
                         <div className="lg:col-span-2">
-                            <div className="bg-white rounded-3xl border border-cream-dark shadow-card p-8 md:p-10">
-                                <h2 className="font-display text-2xl font-semibold text-navy mb-2">Book an Appointment</h2>
+                            <div className="bg-white rounded-2xl sm:rounded-3xl border border-cream-dark shadow-card p-5 sm:p-8 md:p-10">
+                                <h2 className="font-display text-xl sm:text-2xl font-semibold text-navy mb-2">Book an Appointment</h2>
                                 <p className="text-navy/50 text-sm mb-1">
                                     Choose a time slot and fill in your details. Your booking is <strong className="text-green-600">instantly confirmed</strong>.
                                 </p>
@@ -558,11 +559,14 @@ export default function AppointmentsPageContent() {
                                     {/* New Patient */}
                                     <div>
                                         <label className="block text-xs font-semibold text-navy mb-3 uppercase tracking-wider">Are you a new patient? <span className="text-gold">*</span></label>
-                                        <div className="flex gap-4">
-                                            {[{ value: "yes", label: "Yes, first visit" }, { value: "no", label: "No, returning patient" }].map((opt) => (
-                                                <label key={opt.value} className="flex items-center gap-2.5 cursor-pointer">
-                                                    <input type="radio" name="isNewPatient" value={opt.value} checked={form.isNewPatient === opt.value} onChange={handleChange} className="w-4 h-4 accent-gold cursor-pointer" />
-                                                    <span className="text-sm text-navy/70">{opt.label}</span>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {[{ value: "yes", label: "Yes, first visit" }, { value: "no", label: "No, returning" }].map((opt) => (
+                                                <label key={opt.value} className={`flex items-center gap-2.5 cursor-pointer px-4 py-3 rounded-xl border transition-all ${form.isNewPatient === opt.value
+                                                    ? "border-gold bg-gold/8 text-navy"
+                                                    : "border-cream-dark bg-cream text-navy/60 hover:border-gold/40"
+                                                    }`}>
+                                                    <input type="radio" name="isNewPatient" value={opt.value} checked={form.isNewPatient === opt.value} onChange={handleChange} className="w-4 h-4 accent-gold cursor-pointer flex-shrink-0" />
+                                                    <span className="text-sm font-medium">{opt.label}</span>
                                                 </label>
                                             ))}
                                         </div>
@@ -596,7 +600,7 @@ export default function AppointmentsPageContent() {
                                     </div>
 
                                     <button type="submit" disabled={submitting}
-                                        className="w-full btn-gold py-4 rounded-full font-semibold text-sm shadow-gold flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                                        className="w-full btn-gold py-4 rounded-xl font-bold text-sm shadow-gold flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
                                         {submitting ? (
                                             <>
                                                 <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
@@ -613,9 +617,9 @@ export default function AppointmentsPageContent() {
                             </div>
                         </div>
 
-                        {/* Sidebar */}
+                        {/* Sidebar — desktop only for How It Works */}
                         <div className="space-y-6">
-                            <div className="bg-navy rounded-3xl p-6 text-white">
+                            <div className="hidden lg:block bg-navy rounded-3xl p-6 text-white">
                                 <h3 className="font-display text-lg font-semibold mb-4">How It Works</h3>
                                 <ol className="space-y-3">
                                     {[
@@ -661,6 +665,27 @@ export default function AppointmentsPageContent() {
                             </div>
                         </div>
                     </div>
+
+                    {/* How It Works — mobile-only compact strip */}
+                    <div className="lg:hidden mt-6">
+                        <div className="bg-navy rounded-2xl p-4">
+                            <p className="text-gold text-[10px] font-bold uppercase tracking-widest mb-3">How It Works</p>
+                            <div className="grid grid-cols-2 gap-2">
+                                {[
+                                    { n: "01", text: "Pick a date & slot" },
+                                    { n: "02", text: "Fill your details" },
+                                    { n: "03", text: "Get queue number" },
+                                    { n: "04", text: "Walk in on time!" },
+                                ].map((step) => (
+                                    <div key={step.n} className="flex items-center gap-2 bg-white/8 rounded-xl px-3 py-2">
+                                        <span className="w-6 h-6 rounded-full bg-gold/25 text-gold text-[10px] font-bold flex items-center justify-center flex-shrink-0">{step.n}</span>
+                                        <span className="text-white/75 text-xs leading-tight">{step.text}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </section>
         </>
