@@ -7,11 +7,11 @@ import Icon from "@/components/ui/AppIcon";
 import { useAuth } from "@/context/AuthContext";
 
 const floatingCards = [
-{
-  id: "rating",
-  className: "absolute top-[18%] right-[6%] animate-float z-20 hidden sm:block",
-  content:
-  <div className="glass-card rounded-2xl px-4 py-3 shadow-gold flex items-center gap-3 min-w-[180px]">
+  {
+    id: "rating",
+    className: "absolute top-[18%] right-[6%] animate-float z-20 hidden sm:block",
+    content:
+      <div className="glass-card rounded-2xl px-4 py-3 shadow-gold flex items-center gap-3 min-w-[180px]">
         <div className="w-10 h-10 bg-gold/15 rounded-xl flex items-center justify-center flex-shrink-0">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="#C9A96E">
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
@@ -23,12 +23,12 @@ const floatingCards = [
         </div>
       </div>
 
-},
-{
-  id: "patients",
-  className: "absolute bottom-[28%] right-[8%] animate-float-2 z-20 hidden sm:block",
-  content:
-  <div className="glass-card rounded-2xl px-4 py-3 shadow-card flex items-center gap-3 min-w-[200px]">
+  },
+  {
+    id: "patients",
+    className: "absolute bottom-[28%] right-[8%] animate-float-2 z-20 hidden sm:block",
+    content:
+      <div className="glass-card rounded-2xl px-4 py-3 shadow-card flex items-center gap-3 min-w-[200px]">
         <div className="w-10 h-10 bg-navy/10 rounded-xl flex items-center justify-center flex-shrink-0">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B1F3A" strokeWidth="2">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -43,12 +43,12 @@ const floatingCards = [
         </div>
       </div>
 
-},
-{
-  id: "experience",
-  className: "absolute top-[38%] left-[3%] animate-float-3 z-20 hidden xl:block",
-  content:
-  <div className="glass-card rounded-2xl px-4 py-3 shadow-card flex items-center gap-3 min-w-[170px]">
+  },
+  {
+    id: "experience",
+    className: "absolute top-[38%] left-[3%] animate-float-3 z-20 hidden xl:block",
+    content:
+      <div className="glass-card rounded-2xl px-4 py-3 shadow-card flex items-center gap-3 min-w-[170px]">
         <div className="w-10 h-10 bg-gold/15 rounded-xl flex items-center justify-center flex-shrink-0">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" strokeWidth="2">
             <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
@@ -61,7 +61,7 @@ const floatingCards = [
         </div>
       </div>
 
-}];
+  }];
 
 
 export default function HeroSection() {
@@ -99,7 +99,7 @@ export default function HeroSection() {
           fill
           className="object-cover object-center"
           priority />
-        
+
         {/* Multi-stop gradient overlay */}
         <div className="absolute inset-0 hero-gradient" />
         {/* Bottom fade to cream */}
@@ -118,10 +118,10 @@ export default function HeroSection() {
             <div
               className="inline-flex items-center gap-2 trust-badge rounded-full px-4 py-2 mb-8 animate-fade-in"
               style={{ animationDelay: "0.1s", opacity: 0 }}>
-              
+
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
               <span className="text-white/90 text-xs font-medium tracking-wide uppercase">
-                Now Accepting New Patients · Same-Day Appointments Available
+                Book Your Appointment Today
               </span>
             </div>
 
@@ -129,7 +129,7 @@ export default function HeroSection() {
             <h1
               ref={headingRef}
               className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white font-semibold leading-[1.05] tracking-tight mb-5 sm:mb-6">
-              
+
               Your Smile
               <br />
               <em className="font-light italic text-gold-light not-italic">
@@ -141,9 +141,9 @@ export default function HeroSection() {
 
             {/* Subheadline */}
             <p
-              className="text-white/75 text-base sm:text-lg md:text-xl font-light leading-relaxed max-w-xl mb-8 sm:mb-10 animate-fade-in"
+              className="text-white/95 text-base sm:text-lg md:text-xl font-medium leading-relaxed max-w-xl mb-8 sm:mb-10 animate-fade-in drop-shadow-md"
               style={{ animationDelay: "0.4s", opacity: 0 }}>
-              
+
               Manhattan's premier dental hospital — combining cutting-edge technology
               with compassionate care for over 18 years. From routine cleanings to
               full-mouth restorations.
@@ -153,37 +153,40 @@ export default function HeroSection() {
             <div
               className="flex flex-col sm:flex-row gap-4 mb-12 animate-fade-in"
               style={{ animationDelay: "0.55s", opacity: 0 }}>
-              
+
               <button
                 onClick={handleBookAppointment}
                 className="btn-gold px-8 py-4 rounded-full text-base font-semibold shadow-gold flex items-center justify-center gap-2 group">
-                
-                <span>Book Appointment</span>
+
+                <span>Book an Appointment</span>
                 <Icon name="ArrowRightIcon" size={18} className="group-hover:translate-x-1 transition-transform" />
               </button>
               <button
                 onClick={() => router.push("/services")}
                 className="flex items-center justify-center gap-2 px-8 py-4 rounded-full border border-white/30 text-white font-medium text-base hover:bg-white/10 transition-all backdrop-blur-sm">
-                
+
                 <span>Explore Services</span>
               </button>
             </div>
 
             {/* Trust Indicators */}
             <div
-              className="flex flex-wrap items-center gap-3 sm:gap-6 animate-fade-in"
+              className="flex flex-wrap items-center gap-2.5 animate-fade-in"
               style={{ animationDelay: "0.7s", opacity: 0 }}>
-              
+
               {[
-              { icon: "ShieldCheckIcon", text: "Board-Certified Specialists" },
-              { icon: "ClockIcon", text: "Emergency Care 24/7" },
-              { icon: "CreditCardIcon", text: "All Insurance Accepted" }].
-              map((item) =>
-              <div key={item.text} className="flex items-center gap-2">
-                  <Icon name={item.icon as any} size={16} variant="solid" className="text-gold" />
-                  <span className="text-white/80 text-sm font-medium">{item.text}</span>
-                </div>
-              )}
+                { icon: "ShieldCheckIcon", text: "Board-Certified Specialists" },
+                { icon: "ClockIcon", text: "Emergency Care 24/7" },
+                { icon: "CreditCardIcon", text: "All Insurance Accepted" }].
+                map((item) =>
+                  <div
+                    key={item.text}
+                    className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-navy/50 backdrop-blur-md border border-white/10 shadow-sm"
+                  >
+                    <Icon name={item.icon as any} size={14} variant="solid" className="text-gold flex-shrink-0" />
+                    <span className="text-white text-xs font-semibold tracking-wide whitespace-nowrap">{item.text}</span>
+                  </div>
+                )}
             </div>
           </div>
 
@@ -206,31 +209,39 @@ export default function HeroSection() {
               {/* Stats Grid */}
               <div className="grid grid-cols-2 gap-4 mb-6">
                 {[
-                  { value: "15,000+", label: "Patients Treated", icon: (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" strokeWidth="2">
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                      <circle cx="9" cy="7" r="4" />
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                    </svg>
-                  )},
-                  { value: "18 Years", label: "Of Excellence", icon: (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" strokeWidth="2">
-                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                    </svg>
-                  )},
-                  { value: "50+", label: "Specialist Doctors", icon: (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" strokeWidth="2">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                      <circle cx="12" cy="7" r="4" />
-                    </svg>
-                  )},
-                  { value: "4.9 / 5.0", label: "Patient Rating", icon: (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#C9A96E">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                    </svg>
-                  )},
+                  {
+                    value: "15,000+", label: "Patients Treated", icon: (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" strokeWidth="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                      </svg>
+                    )
+                  },
+                  {
+                    value: "18 Years", label: "Of Excellence", icon: (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" strokeWidth="2">
+                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                      </svg>
+                    )
+                  },
+                  {
+                    value: "50+", label: "Specialist Doctors", icon: (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" strokeWidth="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                    )
+                  },
+                  {
+                    value: "4.9 / 5.0", label: "Patient Rating", icon: (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="#C9A96E">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                      </svg>
+                    )
+                  },
                 ].map((stat) => (
                   <div key={stat.label} className="bg-cream rounded-2xl p-4 flex flex-col gap-2">
                     <div className="w-8 h-8 bg-gold/15 rounded-lg flex items-center justify-center">
@@ -284,7 +295,7 @@ export default function HeroSection() {
 
       {/* Floating Cards */}
       {floatingCards.map((card) =>
-      <div key={card.id} className={card.className}>
+        <div key={card.id} className={card.className}>
           {card.content}
         </div>
       )}
