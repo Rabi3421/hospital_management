@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import { useAuth } from "@/context/AuthContext";
 import { adminNavItems } from "../navItems";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -9,7 +10,6 @@ type PaymentStatus = "paid" | "partial" | "pending";
 type PaymentMode = "cash" | "upi" | "card" | "insurance" | "";
 
 interface BillItem {
-  id: string;
   treatmentName: string;
   toothNumber: string;
   quantity: number;
@@ -17,10 +17,10 @@ interface BillItem {
 }
 
 interface Bill {
-  id: string;
+  _id: string;
   invoiceNumber: string;
   patientName: string;
-  patientId: string;
+  patientEmail: string;
   patientPhone: string;
   visitDate: string;
   doctor: string;
@@ -34,115 +34,6 @@ interface Bill {
   notes: string;
   createdAt: string;
 }
-
-// ─── Seed data ─────────────────────────────────────────────────────────────
-const MOCK_BILLS: Bill[] = [
-  {
-    id: "b1",
-    invoiceNumber: "INV-2026-001",
-    patientName: "Avnish Kumar",
-    patientId: "p1",
-    patientPhone: "+91 9876543210",
-    visitDate: "2026-02-27",
-    doctor: "Dr. Sarah Johnson",
-    items: [
-      { id: "i1", treatmentName: "Composite Filling", toothNumber: "#14", quantity: 1, unitCost: 1500 },
-      { id: "i2", treatmentName: "Consultation", toothNumber: "—", quantity: 1, unitCost: 300 },
-    ],
-    subtotal: 1800,
-    discount: 180,
-    total: 1620,
-    amountPaid: 1620,
-    paymentStatus: "paid",
-    paymentMode: "upi",
-    notes: "Payment received via PhonePe.",
-    createdAt: "2026-02-27",
-  },
-  {
-    id: "b2",
-    invoiceNumber: "INV-2026-002",
-    patientName: "Priya Sharma",
-    patientId: "p2",
-    patientPhone: "+91 9123456789",
-    visitDate: "2026-02-01",
-    doctor: "Dr. Michael Chen",
-    items: [
-      { id: "i3", treatmentName: "Root Canal Treatment", toothNumber: "#26", quantity: 1, unitCost: 8500 },
-      { id: "i4", treatmentName: "Ceramic Crown", toothNumber: "#26", quantity: 1, unitCost: 6000 },
-      { id: "i5", treatmentName: "OPG X-Ray", toothNumber: "Full Mouth", quantity: 1, unitCost: 700 },
-    ],
-    subtotal: 15200,
-    discount: 700,
-    total: 14500,
-    amountPaid: 10000,
-    paymentStatus: "partial",
-    paymentMode: "card",
-    notes: "Balance ₹4500 to be paid at next visit.",
-    createdAt: "2026-02-01",
-  },
-  {
-    id: "b3",
-    invoiceNumber: "INV-2026-003",
-    patientName: "Rahul Mehta",
-    patientId: "p3",
-    patientPhone: "+91 9988776655",
-    visitDate: "2026-02-10",
-    doctor: "Dr. Anika Patel",
-    items: [
-      { id: "i6", treatmentName: "Orthodontic Braces (Advance)", toothNumber: "Full Arch", quantity: 1, unitCost: 35000 },
-    ],
-    subtotal: 35000,
-    discount: 2000,
-    total: 33000,
-    amountPaid: 0,
-    paymentStatus: "pending",
-    paymentMode: "",
-    notes: "Patient requested invoice for insurance reimbursement.",
-    createdAt: "2026-02-10",
-  },
-  {
-    id: "b4",
-    invoiceNumber: "INV-2026-004",
-    patientName: "Sneha Reddy",
-    patientId: "p4",
-    patientPhone: "+91 9765432100",
-    visitDate: "2026-03-01",
-    doctor: "Dr. Sarah Johnson",
-    items: [
-      { id: "i7", treatmentName: "Tooth Extraction (Wisdom)", toothNumber: "#28", quantity: 1, unitCost: 1200 },
-      { id: "i8", treatmentName: "Antibiotic Pack", toothNumber: "—", quantity: 1, unitCost: 250 },
-      { id: "i9", treatmentName: "Consultation", toothNumber: "—", quantity: 1, unitCost: 300 },
-    ],
-    subtotal: 1750,
-    discount: 0,
-    total: 1750,
-    amountPaid: 1750,
-    paymentStatus: "paid",
-    paymentMode: "cash",
-    notes: "",
-    createdAt: "2026-03-01",
-  },
-  {
-    id: "b5",
-    invoiceNumber: "INV-2026-005",
-    patientName: "Kiran Das",
-    patientId: "p5",
-    patientPhone: "+91 8877665544",
-    visitDate: "2026-03-08",
-    doctor: "Dr. Anika Patel",
-    items: [
-      { id: "i10", treatmentName: "LED Teeth Whitening", toothNumber: "Front 12", quantity: 1, unitCost: 4500 },
-    ],
-    subtotal: 4500,
-    discount: 500,
-    total: 4000,
-    amountPaid: 2000,
-    paymentStatus: "partial",
-    paymentMode: "upi",
-    notes: "Balance ₹2000 due on follow-up.",
-    createdAt: "2026-03-08",
-  },
-];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const fmtDate = (d: string) => {
@@ -171,6 +62,7 @@ const initials = (n: string) =>
 
 const EMPTY_FORM = {
   patientName: "",
+  patientEmail: "",
   patientPhone: "",
   visitDate: new Date().toISOString().slice(0, 10),
   doctor: "",
@@ -179,8 +71,8 @@ const EMPTY_FORM = {
   paymentMode: "" as PaymentMode,
   amountPaid: "0",
   notes: "",
-  items: [{ id: "new1", treatmentName: "", toothNumber: "", quantity: "1", unitCost: "" }] as {
-    id: string;
+  items: [{ key: "new1", treatmentName: "", toothNumber: "", quantity: "1", unitCost: "" }] as {
+    key: string;
     treatmentName: string;
     toothNumber: string;
     quantity: string;
@@ -190,30 +82,74 @@ const EMPTY_FORM = {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function BillingPage() {
-  const [bills, setBills] = useState<Bill[]>(MOCK_BILLS);
+  const { accessToken } = useAuth();
+  const [bills, setBills] = useState<Bill[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | "all">("all");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [pages, setPages] = useState(1);
+  const LIMIT = 20;
+
   const [selected, setSelected] = useState<Bill | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [saving, setSaving] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
+  const [revenue, setRevenue] = useState({ totalRevenue: 0, totalPaid: 0, totalPending: 0 });
+  const [counts, setCounts] = useState({ all: 0, paid: 0, partial: 0, pending: 0 });
 
-  const filtered = bills.filter((b) => {
-    const matchSearch =
-      b.patientName.toLowerCase().includes(search.toLowerCase()) ||
-      b.invoiceNumber.toLowerCase().includes(search.toLowerCase()) ||
-      b.doctor.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === "all" || b.paymentStatus === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  const headers = useCallback(() => ({
+    "Content-Type": "application/json",
+    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+  }), [accessToken]);
 
-  const totalBilled = bills.reduce((s, b) => s + b.total, 0);
-  const totalCollected = bills.reduce((s, b) => s + b.amountPaid, 0);
-  const totalPending = totalBilled - totalCollected;
-  const stats = {
-    paid: bills.filter((b) => b.paymentStatus === "paid").length,
-    partial: bills.filter((b) => b.paymentStatus === "partial").length,
-    pending: bills.filter((b) => b.paymentStatus === "pending").length,
-  };
+  useEffect(() => {
+    const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  const fetchBills = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        search: debouncedSearch,
+        paymentStatus: statusFilter === "all" ? "" : statusFilter,
+        page: String(page),
+        limit: String(LIMIT),
+      });
+      const res = await fetch(`/api/admin/billing?${params}`, { headers: headers(), credentials: "include" });
+      const json = await res.json();
+      if (json.success) {
+        setBills(json.data.bills);
+        setTotal(json.data.total);
+        setPages(json.data.pages);
+        if (json.data.revenue) setRevenue(json.data.revenue);
+      }
+    } finally { setLoading(false); }
+  }, [headers, debouncedSearch, statusFilter, page]);
+
+  const fetchCounts = useCallback(async () => {
+    try {
+      const [all, paid, partial, pending] = await Promise.all([
+        fetch("/api/admin/billing?limit=1", { headers: headers(), credentials: "include" }).then((r) => r.json()),
+        fetch("/api/admin/billing?paymentStatus=paid&limit=1", { headers: headers(), credentials: "include" }).then((r) => r.json()),
+        fetch("/api/admin/billing?paymentStatus=partial&limit=1", { headers: headers(), credentials: "include" }).then((r) => r.json()),
+        fetch("/api/admin/billing?paymentStatus=pending&limit=1", { headers: headers(), credentials: "include" }).then((r) => r.json()),
+      ]);
+      setCounts({
+        all: all.data?.total ?? 0,
+        paid: paid.data?.total ?? 0,
+        partial: partial.data?.total ?? 0,
+        pending: pending.data?.total ?? 0,
+      });
+    } catch { /* silent */ }
+  }, [headers]);
+
+  useEffect(() => { fetchBills(); }, [fetchBills]);
+  useEffect(() => { fetchCounts(); }, [fetchCounts]);
 
   // Compute form subtotal/total
   const formSubtotal = form.items.reduce(
@@ -225,62 +161,93 @@ export default function BillingPage() {
   const addFormItem = () => {
     setForm((p) => ({
       ...p,
-      items: [...p.items, { id: `new${Date.now()}`, treatmentName: "", toothNumber: "", quantity: "1", unitCost: "" }],
+      items: [...p.items, { key: `new${Date.now()}`, treatmentName: "", toothNumber: "", quantity: "1", unitCost: "" }],
     }));
   };
 
-  const removeFormItem = (id: string) => {
-    setForm((p) => ({ ...p, items: p.items.filter((i) => i.id !== id) }));
+  const removeFormItem = (key: string) => {
+    setForm((p) => ({ ...p, items: p.items.filter((i) => i.key !== key) }));
   };
 
-  const updateFormItem = (id: string, field: string, val: string) => {
+  const updateFormItem = (key: string, field: string, val: string) => {
     setForm((p) => ({
       ...p,
-      items: p.items.map((i) => (i.id === id ? { ...i, [field]: val } : i)),
+      items: p.items.map((i) => (i.key === key ? { ...i, [field]: val } : i)),
     }));
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!form.patientName || form.items.some((i) => !i.treatmentName)) return;
-    const newBill: Bill = {
-      id: `b${Date.now()}`,
-      invoiceNumber: `INV-2026-${String(bills.length + 1).padStart(3, "0")}`,
-      patientName: form.patientName,
-      patientId: `p${Date.now()}`,
-      patientPhone: form.patientPhone,
-      visitDate: form.visitDate,
-      doctor: form.doctor,
-      items: form.items.map((i, idx) => ({
-        id: `i${Date.now()}_${idx}`,
-        treatmentName: i.treatmentName,
-        toothNumber: i.toothNumber || "—",
-        quantity: Number(i.quantity) || 1,
-        unitCost: Number(i.unitCost) || 0,
-      })),
-      subtotal: formSubtotal,
-      discount: Number(form.discount) || 0,
-      total: formTotal,
-      amountPaid: Number(form.amountPaid) || 0,
-      paymentStatus: form.paymentStatus,
-      paymentMode: form.paymentMode,
-      notes: form.notes,
-      createdAt: new Date().toISOString().slice(0, 10),
-    };
-    setBills((prev) => [newBill, ...prev]);
-    setForm(EMPTY_FORM);
-    setShowAdd(false);
+    setSaving(true);
+    try {
+      const payload = {
+        patientName: form.patientName,
+        patientEmail: form.patientEmail,
+        patientPhone: form.patientPhone,
+        visitDate: form.visitDate,
+        doctor: form.doctor,
+        discount: Number(form.discount) || 0,
+        amountPaid: Number(form.amountPaid) || 0,
+        paymentMode: form.paymentMode,
+        notes: form.notes,
+        items: form.items.map((i) => ({
+          treatmentName: i.treatmentName,
+          toothNumber: i.toothNumber || "—",
+          quantity: Number(i.quantity) || 1,
+          unitCost: Number(i.unitCost) || 0,
+        })),
+      };
+      const res = await fetch("/api/admin/billing", {
+        method: "POST",
+        headers: headers(),
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setFeedback({ type: "ok", msg: `Invoice ${json.data.invoiceNumber} generated.` });
+        setForm(EMPTY_FORM);
+        setShowAdd(false);
+        fetchBills();
+        fetchCounts();
+      } else {
+        setFeedback({ type: "err", msg: json.error ?? "Failed to generate invoice." });
+      }
+    } finally { setSaving(false); setTimeout(() => setFeedback(null), 4000); }
   };
 
-  const updatePaymentStatus = (id: string, status: PaymentStatus) => {
-    setBills((prev) => prev.map((b) => (b.id === id ? { ...b, paymentStatus: status } : b)));
-    if (selected?.id === id) setSelected((prev) => (prev ? { ...prev, paymentStatus: status } : prev));
+  const updatePaymentStatus = async (bill: Bill, status: PaymentStatus) => {
+    try {
+      const res = await fetch(`/api/admin/billing/${bill._id}`, {
+        method: "PATCH",
+        headers: headers(),
+        credentials: "include",
+        body: JSON.stringify({ paymentStatus: status }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        fetchBills();
+        fetchCounts();
+        if (selected?._id === bill._id) setSelected(json.data);
+      }
+    } catch { /* silent */ }
+  };
+
+  const handleDelete = async (bill: Bill) => {
+    if (!confirm(`Delete invoice ${bill.invoiceNumber}?`)) return;
+    try {
+      await fetch(`/api/admin/billing/${bill._id}`, { method: "DELETE", headers: headers(), credentials: "include" });
+      setSelected(null);
+      fetchBills();
+      fetchCounts();
+    } catch { /* silent */ }
   };
 
   const FILTER_TABS: { key: PaymentStatus | "all"; label: string }[] = [
-    { key: "all", label: `All (${bills.length})` },
-    { key: "paid", label: `Paid (${stats.paid})` },
-    { key: "partial", label: `Partial (${stats.partial})` },
-    { key: "pending", label: `Pending (${stats.pending})` },
+    { key: "all", label: `All (${counts.all})` },
+    { key: "paid", label: `Paid (${counts.paid})` },
+    { key: "partial", label: `Partial (${counts.partial})` },
+    { key: "pending", label: `Pending (${counts.pending})` },
   ];
 
   return (
@@ -309,13 +276,22 @@ export default function BillingPage() {
           </button>
         </div>
 
+        {/* Feedback */}
+        {feedback && (
+          <div className={`mb-4 px-4 py-3 rounded-xl text-sm font-medium ${
+            feedback.type === "ok" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
+          }`}>
+            {feedback.msg}
+          </div>
+        )}
+
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
           {[
-            { label: "Total Billed", value: `₹${totalBilled.toLocaleString()}`, color: "text-navy" },
-            { label: "Collected", value: `₹${totalCollected.toLocaleString()}`, color: "text-green-600" },
-            { label: "Pending / Due", value: `₹${totalPending.toLocaleString()}`, color: "text-red-500" },
-            { label: "Total Invoices", value: bills.length, color: "text-navy" },
+            { label: "Total Billed", value: `₹${revenue.totalRevenue.toLocaleString()}`, color: "text-navy" },
+            { label: "Collected", value: `₹${revenue.totalPaid.toLocaleString()}`, color: "text-green-600" },
+            { label: "Pending / Due", value: `₹${revenue.totalPending.toLocaleString()}`, color: "text-red-500" },
+            { label: "Total Invoices", value: counts.all, color: "text-navy" },
           ].map(({ label, value, color }) => (
             <div key={label} className="glass-card rounded-2xl p-4 text-center">
               <p className={`text-lg sm:text-xl font-fraunces font-bold ${color}`}>{value}</p>
@@ -360,11 +336,13 @@ export default function BillingPage() {
 
         {/* Mobile Cards */}
         <div className="lg:hidden space-y-3">
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="glass-card rounded-2xl p-10 text-center text-navy/40 text-sm">Loading bills…</div>
+          ) : bills.length === 0 ? (
             <div className="glass-card rounded-2xl p-10 text-center text-navy/40 text-sm">No bills found.</div>
           ) : (
-            filtered.map((b) => (
-              <div key={b.id} className="glass-card rounded-2xl p-4">
+            bills.map((b) => (
+              <div key={b._id} className="glass-card rounded-2xl p-4">
                 <div className="flex items-start justify-between gap-2 mb-3">
                   <div>
                     <p className="font-semibold text-navy text-sm">{b.patientName}</p>
@@ -416,13 +394,17 @@ export default function BillingPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-navy/5">
-              {filtered.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={9} className="text-center text-navy/40 text-sm py-10">Loading…</td>
+                </tr>
+              ) : bills.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="text-center text-navy/40 text-sm py-10">No bills found.</td>
                 </tr>
               ) : (
-                filtered.map((b) => (
-                  <tr key={b.id} className="hover:bg-navy/[0.015] transition-colors">
+                bills.map((b) => (
+                  <tr key={b._id} className="hover:bg-navy/[0.015] transition-colors">
                     <td className="px-5 py-4">
                       <p className="font-medium text-navy text-xs">{b.invoiceNumber}</p>
                       <p className="text-navy/40 text-xs">{fmtDate(b.createdAt)}</p>
@@ -453,8 +435,11 @@ export default function BillingPage() {
                       </span>
                     </td>
                     <td className="px-5 py-4 text-right">
-                      <button onClick={() => setSelected(b)} className="text-xs text-gold font-medium hover:underline">
+                      <button onClick={() => setSelected(b)} className="text-xs text-gold font-medium hover:underline mr-3">
                         View
+                      </button>
+                      <button onClick={() => handleDelete(b)} className="text-xs text-red-400 font-medium hover:underline">
+                        Delete
                       </button>
                     </td>
                   </tr>
@@ -463,6 +448,30 @@ export default function BillingPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {pages > 1 && (
+          <div className="flex items-center justify-between mt-4">
+            <p className="text-xs text-navy/40">Showing {bills.length} of {total} invoices</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-3 py-1.5 text-xs rounded-lg border border-navy/15 text-navy disabled:opacity-40 hover:bg-navy/5 transition-colors"
+              >
+                Prev
+              </button>
+              <span className="px-3 py-1.5 text-xs text-navy/60">{page} / {pages}</span>
+              <button
+                onClick={() => setPage((p) => Math.min(pages, p + 1))}
+                disabled={page === pages}
+                className="px-3 py-1.5 text-xs rounded-lg border border-navy/15 text-navy disabled:opacity-40 hover:bg-navy/5 transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* ── Invoice Detail Modal ── */}
@@ -496,8 +505,8 @@ export default function BillingPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-navy/5">
-                  {selected.items.map((item) => (
-                    <tr key={item.id}>
+                  {selected.items.map((item, idx) => (
+                    <tr key={idx}>
                       <td className="px-3 py-2 text-navy font-medium">{item.treatmentName}</td>
                       <td className="px-2 py-2 text-center text-navy/60">{item.toothNumber}</td>
                       <td className="px-2 py-2 text-center text-navy/60">{item.quantity}</td>
@@ -547,7 +556,7 @@ export default function BillingPage() {
                 {(["paid", "partial", "pending"] as PaymentStatus[]).map((s) => (
                   <button
                     key={s}
-                    onClick={() => updatePaymentStatus(selected.id, s)}
+                    onClick={() => updatePaymentStatus(selected, s)}
                     className={`flex-1 py-2 rounded-xl text-xs font-medium capitalize transition-colors border ${
                       selected.paymentStatus === s
                         ? `${STATUS_META[s].style} border-transparent`
@@ -610,12 +619,12 @@ export default function BillingPage() {
                 <div className="col-span-1" />
               </div>
               {form.items.map((item) => (
-                <div key={item.id} className="grid grid-cols-12 gap-2 items-center">
-                  <input type="text" value={item.treatmentName} onChange={(e) => updateFormItem(item.id, "treatmentName", e.target.value)} className="col-span-5 form-input py-2 text-xs" placeholder="Treatment" />
-                  <input type="text" value={item.toothNumber} onChange={(e) => updateFormItem(item.id, "toothNumber", e.target.value)} className="col-span-2 form-input py-2 text-xs" placeholder="#" />
-                  <input type="number" value={item.quantity} onChange={(e) => updateFormItem(item.id, "quantity", e.target.value)} className="col-span-2 form-input py-2 text-xs text-center" min={1} />
-                  <input type="number" value={item.unitCost} onChange={(e) => updateFormItem(item.id, "unitCost", e.target.value)} className="col-span-2 form-input py-2 text-xs text-right" placeholder="0" />
-                  <button onClick={() => removeFormItem(item.id)} disabled={form.items.length === 1} className="col-span-1 text-red-400 hover:text-red-600 disabled:opacity-20 text-center">
+                <div key={item.key} className="grid grid-cols-12 gap-2 items-center">
+                  <input type="text" value={item.treatmentName} onChange={(e) => updateFormItem(item.key, "treatmentName", e.target.value)} className="col-span-5 form-input py-2 text-xs" placeholder="Treatment" />
+                  <input type="text" value={item.toothNumber} onChange={(e) => updateFormItem(item.key, "toothNumber", e.target.value)} className="col-span-2 form-input py-2 text-xs" placeholder="#" />
+                  <input type="number" value={item.quantity} onChange={(e) => updateFormItem(item.key, "quantity", e.target.value)} className="col-span-2 form-input py-2 text-xs text-center" min={1} />
+                  <input type="number" value={item.unitCost} onChange={(e) => updateFormItem(item.key, "unitCost", e.target.value)} className="col-span-2 form-input py-2 text-xs text-right" placeholder="0" />
+                  <button onClick={() => removeFormItem(item.key)} disabled={form.items.length === 1} className="col-span-1 text-red-400 hover:text-red-600 disabled:opacity-20 text-center">
                     <svg className="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                   </button>
                 </div>
@@ -666,10 +675,10 @@ export default function BillingPage() {
             <div className="flex gap-3 mt-5">
               <button
                 onClick={handleGenerate}
-                disabled={!form.patientName || form.items.some((i) => !i.treatmentName)}
+                disabled={saving || !form.patientName || form.items.some((i) => !i.treatmentName)}
                 className="flex-1 bg-navy text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-navy/90 transition-colors disabled:opacity-50"
               >
-                Generate Invoice
+                {saving ? "Generating…" : "Generate Invoice"}
               </button>
               <button onClick={() => setShowAdd(false)} className="px-5 py-2.5 rounded-xl border border-navy/15 text-navy text-sm hover:bg-navy/5 transition-colors">
                 Cancel

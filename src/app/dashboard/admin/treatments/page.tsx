@@ -1,17 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import { useAuth } from "@/context/AuthContext";
 import { adminNavItems } from "../navItems";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type TreatmentStatus = "planned" | "ongoing" | "completed";
 
 interface Treatment {
-  id: string;
+  _id: string;
   patientName: string;
-  patientId: string;
-  patientAge: number;
+  patientEmail: string;
+  patientPhone: string;
   treatmentName: string;
   toothNumbers: string;
   date: string;
@@ -20,109 +21,12 @@ interface Treatment {
   status: TreatmentStatus;
   notes: string;
   followUpDate?: string;
+  createdAt: string;
 }
-
-// ─── Seed data ─────────────────────────────────────────────────────────────
-const MOCK_TREATMENTS: Treatment[] = [
-  {
-    id: "t1",
-    patientName: "Avnish Kumar",
-    patientId: "p1",
-    patientAge: 32,
-    treatmentName: "Composite Filling",
-    toothNumbers: "#14",
-    date: "2026-02-27",
-    doctor: "Dr. Sarah Johnson",
-    cost: 1500,
-    status: "completed",
-    notes: "Class II composite filling. Patient tolerated procedure well.",
-    followUpDate: "2026-03-15",
-  },
-  {
-    id: "t2",
-    patientName: "Avnish Kumar",
-    patientId: "p1",
-    patientAge: 32,
-    treatmentName: "Ultrasonic Scaling",
-    toothNumbers: "Full Mouth",
-    date: "2026-03-05",
-    doctor: "Dr. Sarah Johnson",
-    cost: 800,
-    status: "planned",
-    notes: "Full mouth scaling scheduled post-filling review.",
-  },
-  {
-    id: "t3",
-    patientName: "Priya Sharma",
-    patientId: "p2",
-    patientAge: 28,
-    treatmentName: "Root Canal Treatment",
-    toothNumbers: "#26",
-    date: "2026-01-15",
-    doctor: "Dr. Michael Chen",
-    cost: 8500,
-    status: "completed",
-    notes: "3-canal RCT. Obturation completed. Temporary crown placed.",
-    followUpDate: "2026-02-01",
-  },
-  {
-    id: "t4",
-    patientName: "Priya Sharma",
-    patientId: "p2",
-    patientAge: 28,
-    treatmentName: "Ceramic Crown",
-    toothNumbers: "#26",
-    date: "2026-02-01",
-    doctor: "Dr. Michael Chen",
-    cost: 6000,
-    status: "completed",
-    notes: "E-max ceramic crown cemented. Occlusion checked.",
-  },
-  {
-    id: "t5",
-    patientName: "Rahul Mehta",
-    patientId: "p3",
-    patientAge: 45,
-    treatmentName: "Braces (Orthodontic)",
-    toothNumbers: "Full Arch",
-    date: "2026-02-10",
-    doctor: "Dr. Anika Patel",
-    cost: 35000,
-    status: "ongoing",
-    notes: "Metal braces upper + lower arch. Wire adjustment monthly.",
-    followUpDate: "2026-03-10",
-  },
-  {
-    id: "t6",
-    patientName: "Sneha Reddy",
-    patientId: "p4",
-    patientAge: 35,
-    treatmentName: "Tooth Extraction",
-    toothNumbers: "#28",
-    date: "2026-03-01",
-    doctor: "Dr. Sarah Johnson",
-    cost: 1200,
-    status: "completed",
-    notes: "Wisdom tooth extraction. Socket packed. Prescribed antibiotics.",
-    followUpDate: "2026-03-08",
-  },
-  {
-    id: "t7",
-    patientName: "Kiran Das",
-    patientId: "p5",
-    patientAge: 22,
-    treatmentName: "Teeth Whitening",
-    toothNumbers: "Front 12",
-    date: "2026-03-08",
-    doctor: "Dr. Anika Patel",
-    cost: 4500,
-    status: "planned",
-    notes: "LED whitening session planned. Pre-check for sensitivity.",
-  },
-];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const fmtDate = (d: string) => {
+  if (!d) return "—";
   const dt = new Date(d);
   return isNaN(dt.getTime())
     ? d
@@ -145,7 +49,8 @@ const initials = (n: string) =>
 
 const EMPTY_FORM = {
   patientName: "",
-  patientAge: "",
+  patientEmail: "",
+  patientPhone: "",
   treatmentName: "",
   toothNumbers: "",
   date: new Date().toISOString().slice(0, 10),
@@ -158,55 +63,121 @@ const EMPTY_FORM = {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function TreatmentRecordsPage() {
-  const [treatments, setTreatments] = useState<Treatment[]>(MOCK_TREATMENTS);
+  const { accessToken } = useAuth();
+  const [treatments, setTreatments] = useState<Treatment[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<TreatmentStatus | "all">("all");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [pages, setPages] = useState(1);
+  const LIMIT = 20;
+
   const [selected, setSelected] = useState<Treatment | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [saving, setSaving] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
+  const [stats, setStats] = useState({ total: 0, planned: 0, ongoing: 0, completed: 0 });
 
-  // Filters
-  const filtered = treatments.filter((t) => {
-    const matchSearch =
-      t.patientName.toLowerCase().includes(search.toLowerCase()) ||
-      t.treatmentName.toLowerCase().includes(search.toLowerCase()) ||
-      t.doctor.toLowerCase().includes(search.toLowerCase()) ||
-      t.toothNumbers.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === "all" || t.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  const headers = useCallback(() => ({
+    "Content-Type": "application/json",
+    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+  }), [accessToken]);
 
-  const stats = {
-    total: treatments.length,
-    planned: treatments.filter((t) => t.status === "planned").length,
-    ongoing: treatments.filter((t) => t.status === "ongoing").length,
-    completed: treatments.filter((t) => t.status === "completed").length,
-  };
+  useEffect(() => {
+    const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
+    return () => clearTimeout(t);
+  }, [search]);
 
-  const handleAdd = () => {
+  const fetchTreatments = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        search: debouncedSearch,
+        status: statusFilter === "all" ? "" : statusFilter,
+        page: String(page),
+        limit: String(LIMIT),
+      });
+      const res = await fetch(`/api/admin/treatments?${params}`, { headers: headers(), credentials: "include" });
+      const json = await res.json();
+      if (json.success) {
+        setTreatments(json.data.treatments);
+        setTotal(json.data.total);
+        setPages(json.data.pages);
+      }
+    } finally { setLoading(false); }
+  }, [headers, debouncedSearch, statusFilter, page]);
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const [all, planned, ongoing, completed] = await Promise.all([
+        fetch("/api/admin/treatments?limit=1", { headers: headers(), credentials: "include" }).then((r) => r.json()),
+        fetch("/api/admin/treatments?status=planned&limit=1", { headers: headers(), credentials: "include" }).then((r) => r.json()),
+        fetch("/api/admin/treatments?status=ongoing&limit=1", { headers: headers(), credentials: "include" }).then((r) => r.json()),
+        fetch("/api/admin/treatments?status=completed&limit=1", { headers: headers(), credentials: "include" }).then((r) => r.json()),
+      ]);
+      setStats({
+        total: all.data?.total ?? 0,
+        planned: planned.data?.total ?? 0,
+        ongoing: ongoing.data?.total ?? 0,
+        completed: completed.data?.total ?? 0,
+      });
+    } catch { /* silent */ }
+  }, [headers]);
+
+  useEffect(() => { fetchTreatments(); }, [fetchTreatments]);
+  useEffect(() => { fetchStats(); }, [fetchStats]);
+
+  const handleAdd = async () => {
     if (!form.patientName || !form.treatmentName) return;
-    const newT: Treatment = {
-      id: `t${Date.now()}`,
-      patientName: form.patientName,
-      patientId: `p${Date.now()}`,
-      patientAge: Number(form.patientAge) || 0,
-      treatmentName: form.treatmentName,
-      toothNumbers: form.toothNumbers,
-      date: form.date,
-      doctor: form.doctor,
-      cost: Number(form.cost) || 0,
-      status: form.status,
-      notes: form.notes,
-      followUpDate: form.followUpDate || undefined,
-    };
-    setTreatments((prev) => [newT, ...prev]);
-    setForm(EMPTY_FORM);
-    setShowAdd(false);
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/treatments", {
+        method: "POST",
+        headers: headers(),
+        credentials: "include",
+        body: JSON.stringify({ ...form, cost: Number(form.cost) || 0, followUpDate: form.followUpDate || undefined }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setFeedback({ type: "ok", msg: "Treatment record added." });
+        setForm(EMPTY_FORM);
+        setShowAdd(false);
+        fetchTreatments();
+        fetchStats();
+      } else {
+        setFeedback({ type: "err", msg: json.error ?? "Failed to add treatment." });
+      }
+    } finally { setSaving(false); setTimeout(() => setFeedback(null), 4000); }
   };
 
-  const updateStatus = (id: string, status: TreatmentStatus) => {
-    setTreatments((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
-    if (selected?.id === id) setSelected((prev) => (prev ? { ...prev, status } : prev));
+  const updateStatus = async (treatment: Treatment, status: TreatmentStatus) => {
+    try {
+      const res = await fetch(`/api/admin/treatments/${treatment._id}`, {
+        method: "PATCH",
+        headers: headers(),
+        credentials: "include",
+        body: JSON.stringify({ status }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        fetchTreatments();
+        fetchStats();
+        if (selected?._id === treatment._id) setSelected(json.data);
+      }
+    } catch { /* silent */ }
+  };
+
+  const handleDelete = async (treatment: Treatment) => {
+    if (!confirm(`Delete treatment for ${treatment.patientName}?`)) return;
+    try {
+      await fetch(`/api/admin/treatments/${treatment._id}`, { method: "DELETE", headers: headers(), credentials: "include" });
+      setSelected(null);
+      fetchTreatments();
+      fetchStats();
+    } catch { /* silent */ }
   };
 
   const FILTER_TABS: { key: TreatmentStatus | "all"; label: string }[] = [
@@ -295,13 +266,24 @@ export default function TreatmentRecordsPage() {
           </div>
         </div>
 
+        {/* Feedback */}
+        {feedback && (
+          <div className={`mb-4 px-4 py-3 rounded-xl text-sm font-medium ${
+            feedback.type === "ok" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
+          }`}>
+            {feedback.msg}
+          </div>
+        )}
+
         {/* Mobile Cards */}
         <div className="lg:hidden space-y-3">
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="glass-card rounded-2xl p-10 text-center text-navy/40 text-sm">Loading treatments…</div>
+          ) : treatments.length === 0 ? (
             <div className="glass-card rounded-2xl p-10 text-center text-navy/40 text-sm">No treatments found.</div>
           ) : (
-            filtered.map((t) => (
-              <div key={t.id} className="glass-card rounded-2xl p-4">
+            treatments.map((t) => (
+              <div key={t._id} className="glass-card rounded-2xl p-4">
                 <div className="flex items-start justify-between gap-2 mb-3">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-gold/15 flex items-center justify-center flex-shrink-0">
@@ -309,7 +291,7 @@ export default function TreatmentRecordsPage() {
                     </div>
                     <div>
                       <p className="font-semibold text-navy text-sm">{t.treatmentName}</p>
-                      <p className="text-navy/40 text-xs">{t.patientName} · {t.patientAge}y</p>
+                      <p className="text-navy/40 text-xs">{t.patientName}</p>
                     </div>
                   </div>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium capitalize flex-shrink-0 ${STATUS_META[t.status].style}`}>
@@ -346,13 +328,17 @@ export default function TreatmentRecordsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-navy/5">
-              {filtered.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="text-center text-navy/40 text-sm py-10">Loading…</td>
+                </tr>
+              ) : treatments.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="text-center text-navy/40 text-sm py-10">No treatments found.</td>
                 </tr>
               ) : (
-                filtered.map((t) => (
-                  <tr key={t.id} className="hover:bg-navy/[0.015] transition-colors">
+                treatments.map((t) => (
+                  <tr key={t._id} className="hover:bg-navy/[0.015] transition-colors">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-xl bg-gold/15 flex items-center justify-center flex-shrink-0">
@@ -360,12 +346,12 @@ export default function TreatmentRecordsPage() {
                         </div>
                         <div>
                           <p className="font-semibold text-navy">{t.patientName}</p>
-                          <p className="text-navy/40 text-xs">{t.patientAge}y</p>
+                          <p className="text-navy/40 text-xs">{t.patientEmail}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-4 text-navy font-medium">{t.treatmentName}</td>
-                    <td className="px-4 py-4 text-navy/60">{t.toothNumbers}</td>
+                    <td className="px-4 py-4 text-navy/60">{t.toothNumbers || "—"}</td>
                     <td className="px-4 py-4 text-navy/70">{t.doctor}</td>
                     <td className="px-4 py-4 text-navy/60">{fmtDate(t.date)}</td>
                     <td className="px-4 py-4 text-right font-semibold text-navy">₹{t.cost.toLocaleString()}</td>
@@ -375,11 +361,11 @@ export default function TreatmentRecordsPage() {
                       </span>
                     </td>
                     <td className="px-5 py-4 text-right">
-                      <button
-                        onClick={() => setSelected(t)}
-                        className="text-xs text-gold font-medium hover:underline"
-                      >
+                      <button onClick={() => setSelected(t)} className="text-xs text-gold font-medium hover:underline mr-3">
                         View
+                      </button>
+                      <button onClick={() => handleDelete(t)} className="text-xs text-red-400 font-medium hover:underline">
+                        Delete
                       </button>
                     </td>
                   </tr>
@@ -388,6 +374,30 @@ export default function TreatmentRecordsPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {pages > 1 && (
+          <div className="flex items-center justify-between mt-4">
+            <p className="text-xs text-navy/40">Showing {treatments.length} of {total} treatments</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-3 py-1.5 text-xs rounded-lg border border-navy/15 text-navy disabled:opacity-40 hover:bg-navy/5 transition-colors"
+              >
+                Prev
+              </button>
+              <span className="px-3 py-1.5 text-xs text-navy/60">{page} / {pages}</span>
+              <button
+                onClick={() => setPage((p) => Math.min(pages, p + 1))}
+                disabled={page === pages}
+                className="px-3 py-1.5 text-xs rounded-lg border border-navy/15 text-navy disabled:opacity-40 hover:bg-navy/5 transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* ── Treatment Detail Modal ── */}
@@ -404,7 +414,7 @@ export default function TreatmentRecordsPage() {
               </div>
               <div>
                 <h2 className="font-fraunces text-lg font-bold text-navy">{selected.treatmentName}</h2>
-                <p className="text-navy/40 text-xs">{selected.patientName} · {selected.patientAge}y</p>
+                <p className="text-navy/40 text-xs">{selected.patientName} · {selected.patientEmail}</p>
               </div>
             </div>
 
@@ -430,7 +440,7 @@ export default function TreatmentRecordsPage() {
                 {(["planned", "ongoing", "completed"] as TreatmentStatus[]).map((s) => (
                   <button
                     key={s}
-                    onClick={() => updateStatus(selected.id, s)}
+                    onClick={() => updateStatus(selected, s)}
                     className={`flex-1 py-2 rounded-xl text-xs font-medium capitalize transition-colors border ${
                       selected.status === s
                         ? `${STATUS_META[s].style} border-transparent`
@@ -467,9 +477,14 @@ export default function TreatmentRecordsPage() {
               <FF label="Patient Name *">
                 <input type="text" value={form.patientName} onChange={(e) => setForm((p) => ({ ...p, patientName: e.target.value }))} className="form-input py-2.5 text-sm" placeholder="Patient full name" />
               </FF>
-              <FF label="Patient Age">
-                <input type="number" value={form.patientAge} onChange={(e) => setForm((p) => ({ ...p, patientAge: e.target.value }))} className="form-input py-2.5 text-sm" placeholder="Age" />
+              <FF label="Patient Phone">
+                <input type="tel" value={form.patientPhone} onChange={(e) => setForm((p) => ({ ...p, patientPhone: e.target.value }))} className="form-input py-2.5 text-sm" placeholder="Phone number" />
               </FF>
+              <div className="sm:col-span-2">
+                <FF label="Patient Email">
+                  <input type="email" value={form.patientEmail} onChange={(e) => setForm((p) => ({ ...p, patientEmail: e.target.value }))} className="form-input py-2.5 text-sm" placeholder="patient@email.com" />
+                </FF>
+              </div>
               <div className="sm:col-span-2">
                 <FF label="Treatment Name *">
                   <input type="text" value={form.treatmentName} onChange={(e) => setForm((p) => ({ ...p, treatmentName: e.target.value }))} className="form-input py-2.5 text-sm" placeholder="e.g. Root Canal Treatment" />
@@ -512,10 +527,10 @@ export default function TreatmentRecordsPage() {
             <div className="flex gap-3 mt-5">
               <button
                 onClick={handleAdd}
-                disabled={!form.patientName || !form.treatmentName}
+                disabled={saving || !form.patientName || !form.treatmentName}
                 className="flex-1 bg-navy text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-navy/90 transition-colors disabled:opacity-50"
               >
-                Save Treatment
+                {saving ? "Saving…" : "Save Treatment"}
               </button>
               <button onClick={() => setShowAdd(false)} className="px-5 py-2.5 rounded-xl border border-navy/15 text-navy text-sm hover:bg-navy/5 transition-colors">
                 Cancel
