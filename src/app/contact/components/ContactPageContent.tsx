@@ -25,11 +25,11 @@ const contactCards = [
         icon: "PhoneIcon",
         title: "Call or Text Us",
         lines: [
-            "Main: (212) 555-0190",
-            "Emergency: (212) 555-0191",
-            "Fax: (212) 555-0192",
+            "Main: +91 7008355987",
+            "Emergency: +91 7008355987",
+            "Fax: +91 7008355987",
         ],
-        action: { label: "Call Now", href: "tel:+12125550190" },
+        action: { label: "Call Now", href: "tel:+917008355987" },
         bg: "bg-white",
         iconBg: "bg-gold/10",
         iconColor: "text-gold",
@@ -148,12 +148,12 @@ export default function ContactPageContent() {
     return (
         <>
             {/* Hero */}
-            <section className="relative pt-32 pb-20 overflow-hidden bg-navy">
+            <section className="relative pt-28 sm:pt-32 pb-16 sm:pb-20 overflow-hidden bg-navy">
                 <div className="absolute inset-0 dot-pattern opacity-20" />
                 <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-cream to-transparent" />
                 <div
                     ref={heroRef}
-                    className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 text-center"
+                    className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
                 >
                     <span className="inline-flex items-center gap-2 bg-gold/15 border border-gold/30 rounded-full px-4 py-1.5 mb-6">
                         <span className="w-1.5 h-1.5 rounded-full bg-gold" />
@@ -174,7 +174,7 @@ export default function ContactPageContent() {
             </section>
 
             {/* Contact Cards */}
-            <section className="py-20 px-6 lg:px-8 bg-cream">
+            <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-cream">
                 <div className="max-w-7xl mx-auto">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-16">
                         {contactCards.map((card, i) => (
@@ -422,7 +422,7 @@ export default function ContactPageContent() {
                                     className="flex items-center gap-2 text-red-700 text-sm font-bold"
                                 >
                                     <Icon name="PhoneIcon" size={14} variant="solid" className="text-red-500" />
-                                    (212) 555-0191
+                                    +91 7008355987
                                 </a>
                             </div>
                         </RevealItem>
@@ -431,7 +431,7 @@ export default function ContactPageContent() {
             </section>
 
             {/* FAQ Section */}
-            <section className="py-20 px-6 lg:px-8 bg-white">
+            <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-white">
                 <div className="max-w-3xl mx-auto">
                     <div className="text-center mb-12">
                         <h2 className="font-display text-3xl sm:text-4xl font-semibold text-navy mb-3">
@@ -463,7 +463,7 @@ export default function ContactPageContent() {
             </section>
 
             {/* CTA Banner */}
-            <section className="py-16 px-6 lg:px-8 bg-navy">
+            <section className="py-14 sm:py-16 px-4 sm:px-6 lg:px-8 bg-navy">
                 <div className="max-w-4xl mx-auto text-center">
                     <h2 className="font-display text-3xl font-semibold text-white mb-4">
                         Have an Urgent Dental Question?
@@ -484,7 +484,7 @@ export default function ContactPageContent() {
                             className="flex items-center gap-2 text-white/70 hover:text-white text-sm font-medium transition-colors"
                         >
                             <Icon name="PhoneIcon" size={14} className="text-gold" variant="solid" />
-                            (212) 555-0190
+                            +91 7008355987
                         </a>
                     </div>
                 </div>

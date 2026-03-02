@@ -6,7 +6,7 @@ import ContactPageContent from "./components/ContactPageContent";
 export const metadata: Metadata = {
     title: "Contact Us | DentalCare Advanced Dentistry",
     description:
-        "Get in touch with DentalCare Manhattan. Call (212) 555-0190, email hello@dentalcare.com, or visit us at 425 Madison Avenue, Suite 1200, New York, NY 10017.",
+        "Get in touch with DentalCare Manhattan. Call +91 7008355987, email hello@dentalcare.com, or visit us at 425 Madison Avenue, Suite 1200, New York, NY 10017.",
 };
 
 export default function ContactPage() {

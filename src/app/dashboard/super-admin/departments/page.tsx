@@ -64,7 +64,7 @@ export default function DepartmentsPage() {
                         { label: "Total Patients", value: totalPatients },
                     ].map(({ label, value }) => (
                         <div key={label} className="glass-card rounded-2xl p-4 text-center">
-                            <p className="text-2xl font-fraunces font-bold text-navy">{value}</p>
+                            <p className="text-xl sm:text-2xl font-fraunces font-bold text-navy">{value}</p>
                             <p className="text-navy/50 text-xs mt-1">{label}</p>
                         </div>
                     ))}

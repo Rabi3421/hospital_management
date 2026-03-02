@@ -126,14 +126,14 @@ export default function TestimonialsSection() {
   }, []);
 
   return (
-    <section id="testimonials" className="py-24 lg:py-32 bg-cream">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+    <section id="testimonials" className="py-16 sm:py-24 lg:py-32 bg-cream">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div ref={titleRef} className="text-center mb-16">
           <span className="inline-block text-xs font-semibold tracking-[0.2em] uppercase text-gold mb-4">
             Patient Stories
           </span>
-          <h2 className="font-display text-4xl md:text-5xl font-semibold text-navy tracking-tight leading-[1.1] mb-4">
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold text-navy tracking-tight leading-[1.1] mb-4">
             Real Smiles,
             <br />
             <em className="font-light italic text-navy/60">Real Transformations.</em>

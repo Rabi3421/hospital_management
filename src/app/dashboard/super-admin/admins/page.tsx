@@ -26,9 +26,12 @@ export default function AdminManagementPage() {
     const [modal, setModal] = useState<"create" | "edit" | "reset" | null>(null);
     const [selected, setSelected] = useState<AdminAccount | null>(null);
     const [form, setForm] = useState(EMPTY_FORM);
+    const [showCreatePw, setShowCreatePw] = useState(false);
+    const [showResetPw, setShowResetPw] = useState(false);
     const [newPassword, setNewPassword] = useState("");
     const [saving, setSaving] = useState(false);
     const [feedback, setFeedback] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
+    const [createdCredentials, setCreatedCredentials] = useState<{ name: string; email: string; password: string } | null>(null);
 
     const headers = useCallback(
         () => ({
@@ -62,6 +65,8 @@ export default function AdminManagementPage() {
     const openCreate = () => {
         setForm(EMPTY_FORM);
         setSelected(null);
+        setShowCreatePw(false);
+        setCreatedCredentials(null);
         setModal("create");
     };
 
@@ -80,6 +85,14 @@ export default function AdminManagementPage() {
     const closeModal = () => { setModal(null); setSelected(null); };
 
     const handleCreate = async () => {
+        if (!form.name || !form.email || !form.password) {
+            flash("err", "Name, email and password are required.");
+            return;
+        }
+        if (form.password.length < 6) {
+            flash("err", "Password must be at least 6 characters.");
+            return;
+        }
         setSaving(true);
         try {
             const res = await fetch("/api/super-admin/users", {
@@ -90,8 +103,8 @@ export default function AdminManagementPage() {
             });
             const json = await res.json();
             if (json.success) {
-                flash("ok", "Admin account created.");
-                closeModal();
+                setCreatedCredentials({ name: form.name, email: form.email, password: form.password });
+                setModal(null);
                 fetchAdmins();
             } else {
                 flash("err", json.error ?? "Failed to create admin.");
@@ -219,7 +232,7 @@ export default function AdminManagementPage() {
                         { label: "This Month", value: admins.filter((a) => new Date(a.createdAt).getMonth() === new Date().getMonth()).length },
                     ].map(({ label, value }) => (
                         <div key={label} className="glass-card rounded-2xl p-4 text-center">
-                            <p className="text-2xl font-fraunces font-bold text-navy">{value}</p>
+                            <p className="text-xl sm:text-2xl font-fraunces font-bold text-navy">{value}</p>
                             <p className="text-navy/50 text-xs mt-1">{label}</p>
                         </div>
                     ))}
@@ -285,7 +298,7 @@ export default function AdminManagementPage() {
                                                     {new Date(admin.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                                                 </td>
                                                 <td className="px-5 py-4">
-                                                    <div className="flex items-center justify-end gap-1">
+                                                    <div className="flex items-center justify-end gap-0.5 sm:gap-1">
                                                         <button onClick={() => openEdit(admin)} title="Edit" className="p-1.5 rounded-lg hover:bg-navy/10 text-navy/50 hover:text-navy transition-colors">
                                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
@@ -314,57 +327,185 @@ export default function AdminManagementPage() {
             </main>
 
             {/* ─── Modals ─── */}
+            {/* ── Credentials success card ── */}
+            {createdCredentials && (
+                <ModalOverlay onClose={() => setCreatedCredentials(null)}>
+                    <div className="flex items-center gap-3 mb-5">
+                        <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
+                            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 className="font-fraunces text-lg font-bold text-navy">Admin Account Created</h2>
+                            <p className="text-navy/50 text-xs">Share these credentials securely with the admin</p>
+                        </div>
+                    </div>
+                    <div className="bg-navy/4 border border-navy/10 rounded-xl p-4 space-y-3 mb-5">
+                        <CredRow label="Name" value={createdCredentials.name} />
+                        <CredRow label="Email" value={createdCredentials.email} copyable />
+                        <CredRow label="Password" value={createdCredentials.password} copyable masked />
+                    </div>
+                    <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-5">
+                        ⚠️ This password will not be shown again. Copy it before closing.
+                    </p>
+                    <button onClick={() => setCreatedCredentials(null)} className="w-full bg-navy text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-navy/90 transition-colors">
+                        Done
+                    </button>
+                </ModalOverlay>
+            )}
+
             {(modal === "create" || modal === "edit") && (
                 <ModalOverlay onClose={closeModal}>
-                    <h2 className="font-fraunces text-xl font-bold text-navy mb-6">
+                    <h2 className="font-fraunces text-xl font-bold text-navy mb-1">
                         {modal === "create" ? "Create Admin Account" : "Edit Admin"}
                     </h2>
+                    <p className="text-navy/40 text-xs mb-5">
+                        {modal === "create" ? "Credentials will be shown once after creation." : "Update this admin's details."}
+                    </p>
                     <div className="space-y-4">
-                        <Field label="Full Name">
-                            <input type="text" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} className="form-input py-2.5 text-sm" placeholder="Dr. John Smith" />
-                        </Field>
-                        <Field label="Email Address">
-                            <input type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} className="form-input py-2.5 text-sm" placeholder="admin@dentalcare.com" />
-                        </Field>
+                        {/* Name */}
+                        <div className="group">
+                            <label className="block text-xs font-semibold text-navy/50 uppercase tracking-wider mb-1.5">Full Name</label>
+                            <div className="relative">
+                                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                                    <svg className="w-4 h-4 text-navy/30 group-focus-within:text-gold transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                    </svg>
+                                </span>
+                                <input
+                                    type="text"
+                                    value={form.name}
+                                    onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-navy/15 bg-white text-navy text-sm placeholder:text-navy/30 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/15 transition-all"
+                                    placeholder="Dr. John Smith"
+                                />
+                            </div>
+                        </div>
+                        {/* Email */}
+                        <div className="group">
+                            <label className="block text-xs font-semibold text-navy/50 uppercase tracking-wider mb-1.5">Email Address</label>
+                            <div className="relative">
+                                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                                    <svg className="w-4 h-4 text-navy/30 group-focus-within:text-gold transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                                    </svg>
+                                </span>
+                                <input
+                                    type="email"
+                                    value={form.email}
+                                    onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+                                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-navy/15 bg-white text-navy text-sm placeholder:text-navy/30 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/15 transition-all"
+                                    placeholder="admin@dentalcare.com"
+                                />
+                            </div>
+                        </div>
+                        {/* Password — create only */}
                         {modal === "create" && (
-                            <Field label="Password">
-                                <input type="password" value={form.password} onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))} className="form-input py-2.5 text-sm" placeholder="Min. 6 characters" />
-                            </Field>
+                            <div className="group">
+                                <label className="block text-xs font-semibold text-navy/50 uppercase tracking-wider mb-1.5">Password</label>
+                                <div className="relative">
+                                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                                        <svg className="w-4 h-4 text-navy/30 group-focus-within:text-gold transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                                        </svg>
+                                    </span>
+                                    <input
+                                        type={showCreatePw ? "text" : "password"}
+                                        value={form.password}
+                                        onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
+                                        className="w-full pl-10 pr-11 py-3 rounded-xl border border-navy/15 bg-white text-navy text-sm placeholder:text-navy/30 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/15 transition-all"
+                                        placeholder="Min. 6 characters"
+                                    />
+                                    <button type="button" onClick={() => setShowCreatePw((v) => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-navy/30 hover:text-gold transition-colors">
+                                        {showCreatePw ? (
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+                                        ) : (
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                        )}
+                                    </button>
+                                </div>
+                                <p className="text-xs text-navy/35 mt-1.5 pl-1">You'll be shown these credentials once after creation.</p>
+                            </div>
                         )}
-                        <Field label="Status">
-                            <label className="flex items-center gap-3 cursor-pointer">
-                                <button
-                                    type="button"
-                                    onClick={() => setForm((p) => ({ ...p, isActive: !p.isActive }))}
-                                    className={`relative w-11 h-6 rounded-full transition-colors ${form.isActive ? "bg-gold" : "bg-navy/20"}`}
-                                >
-                                    <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${form.isActive ? "left-[22px]" : "left-0.5"}`} />
-                                </button>
-                                <span className="text-sm text-navy/70">{form.isActive ? "Active" : "Inactive"}</span>
-                            </label>
-                        </Field>
+                        {/* Status toggle */}
+                        <div className="flex items-center justify-between py-1">
+                            <div>
+                                <p className="text-xs font-semibold text-navy/50 uppercase tracking-wider">Account Status</p>
+                                <p className="text-xs text-navy/35 mt-0.5">{form.isActive ? "Admin can log in" : "Login blocked"}</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setForm((p) => ({ ...p, isActive: !p.isActive }))}
+                                className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${form.isActive ? "bg-gold" : "bg-navy/20"}`}
+                            >
+                                <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${form.isActive ? "left-[22px]" : "left-0.5"}`} />
+                            </button>
+                        </div>
                     </div>
                     <div className="flex gap-3 mt-6">
-                        <button onClick={modal === "create" ? handleCreate : handleEdit} disabled={saving} className="btn-primary text-sm px-6 py-2.5 disabled:opacity-60">
-                            {saving ? "Saving…" : modal === "create" ? "Create Admin" : "Save Changes"}
+                        <button
+                            onClick={modal === "create" ? handleCreate : handleEdit}
+                            disabled={saving}
+                            className="flex-1 bg-navy text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-navy/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                        >
+                            {saving ? (
+                                <><svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Saving…</>
+                            ) : modal === "create" ? "Create Admin" : "Save Changes"}
                         </button>
-                        <button onClick={closeModal} className="btn-gold text-sm px-5 py-2.5">Cancel</button>
+                        <button onClick={closeModal} className="px-5 py-2.5 rounded-xl border border-navy/15 text-navy text-sm font-medium hover:bg-navy/5 transition-colors">Cancel</button>
                     </div>
                 </ModalOverlay>
             )}
 
             {modal === "reset" && selected && (
                 <ModalOverlay onClose={closeModal}>
-                    <h2 className="font-fraunces text-xl font-bold text-navy mb-2">Reset Password</h2>
-                    <p className="text-navy/50 text-sm mb-6">Set a new password for <strong className="text-navy">{selected.name}</strong></p>
-                    <Field label="New Password">
-                        <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="form-input py-2.5 text-sm" placeholder="Min. 6 characters" />
-                    </Field>
+                    <div className="flex items-center gap-3 mb-5">
+                        <div className="w-10 h-10 rounded-xl bg-gold/15 flex items-center justify-center flex-shrink-0">
+                            <svg className="w-5 h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 className="font-fraunces text-lg font-bold text-navy">Reset Password</h2>
+                            <p className="text-navy/40 text-xs">For <span className="font-semibold text-navy">{selected.name}</span></p>
+                        </div>
+                    </div>
+                    <div className="group">
+                        <label className="block text-xs font-semibold text-navy/50 uppercase tracking-wider mb-1.5">New Password</label>
+                        <div className="relative">
+                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                                <svg className="w-4 h-4 text-navy/30 group-focus-within:text-gold transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                                </svg>
+                            </span>
+                            <input
+                                type={showResetPw ? "text" : "password"}
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                className="w-full pl-10 pr-11 py-3 rounded-xl border border-navy/15 bg-white text-navy text-sm placeholder:text-navy/30 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/15 transition-all"
+                                placeholder="Min. 6 characters"
+                            />
+                            <button type="button" onClick={() => setShowResetPw((v) => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-navy/30 hover:text-gold transition-colors">
+                                {showResetPw ? (
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+                                ) : (
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                )}
+                            </button>
+                        </div>
+                    </div>
                     <div className="flex gap-3 mt-6">
-                        <button onClick={handleResetPassword} disabled={saving || !newPassword} className="btn-primary text-sm px-6 py-2.5 disabled:opacity-60">
-                            {saving ? "Saving…" : "Reset Password"}
+                        <button
+                            onClick={handleResetPassword}
+                            disabled={saving || !newPassword}
+                            className="flex-1 bg-navy text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-navy/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                        >
+                            {saving ? (
+                                <><svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Saving…</>
+                            ) : "Reset Password"}
                         </button>
-                        <button onClick={closeModal} className="btn-gold text-sm px-5 py-2.5">Cancel</button>
+                        <button onClick={closeModal} className="px-5 py-2.5 rounded-xl border border-navy/15 text-navy text-sm font-medium hover:bg-navy/5 transition-colors">Cancel</button>
                     </div>
                 </ModalOverlay>
             )}
@@ -392,6 +533,43 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
         <div>
             <label className="block text-xs font-medium text-navy/50 mb-1.5">{label}</label>
             {children}
+        </div>
+    );
+}
+
+function CredRow({ label, value, copyable, masked }: { label: string; value: string; copyable?: boolean; masked?: boolean }) {
+    const [revealed, setRevealed] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const copy = () => {
+        navigator.clipboard.writeText(value);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+    const display = masked && !revealed ? "•".repeat(Math.min(value.length, 12)) : value;
+    return (
+        <div className="flex items-center justify-between gap-2">
+            <span className="text-xs text-navy/40 w-16 flex-shrink-0">{label}</span>
+            <span className="flex-1 text-sm text-navy font-medium font-mono truncate">{display}</span>
+            <div className="flex items-center gap-1 flex-shrink-0">
+                {masked && (
+                    <button onClick={() => setRevealed((v) => !v)} className="p-1 rounded hover:bg-navy/10 text-navy/40 hover:text-navy transition-colors">
+                        {revealed ? (
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+                        ) : (
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        )}
+                    </button>
+                )}
+                {copyable && (
+                    <button onClick={copy} className="p-1 rounded hover:bg-navy/10 text-navy/40 hover:text-gold transition-colors">
+                        {copied ? (
+                            <svg className="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                        ) : (
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" /></svg>
+                        )}
+                    </button>
+                )}
+            </div>
         </div>
     );
 }

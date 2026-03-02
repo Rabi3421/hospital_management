@@ -4,7 +4,7 @@ import type { JWTPayload, Role } from "@/types/auth";
 
 type RouteHandler = (
     req: NextRequest,
-    context: { user: JWTPayload; params?: Record<string, string> }
+    context: { user: JWTPayload; params: Record<string, string> }
 ) => Promise<NextResponse>;
 
 interface ProtectOptions {
@@ -13,13 +13,17 @@ interface ProtectOptions {
 
 /**
  * Higher-order function that wraps an API Route handler with auth protection.
+ * Returns a standard Next.js route handler that Next.js type-checking accepts.
  * Usage:
- *   export const GET = withAuth(async (req, { user }) => { ... }, { roles: ["admin"] })
+ *   export const GET = withAuth(async (req, { user, params }) => { ... }, { roles: ["admin"] })
  */
 export function withAuth(handler: RouteHandler, options: ProtectOptions = {}) {
-    return async (req: NextRequest, params?: { params?: Record<string, string> }) => {
+    return async (
+        req: NextRequest,
+        rawCtx?: { params?: Promise<Record<string, string>> | Record<string, string> }
+    ) => {
         // 1. Extract token from cookie or Authorization header
-        let token =
+        const token =
             req.cookies.get(ACCESS_COOKIE)?.value ||
             req.headers.get("authorization")?.replace("Bearer ", "");
 
@@ -49,8 +53,14 @@ export function withAuth(handler: RouteHandler, options: ProtectOptions = {}) {
             }
         }
 
-        // 4. Call the actual handler
-        return handler(req, { user: payload, params: params?.params });
+        // 4. Resolve params (Next.js 15 makes params a Promise in dynamic routes)
+        const rawParams = rawCtx?.params;
+        const resolvedParams: Record<string, string> = rawParams
+            ? (rawParams instanceof Promise ? await rawParams : rawParams)
+            : {};
+
+        // 5. Call the actual handler
+        return handler(req, { user: payload, params: resolvedParams });
     };
 }
 

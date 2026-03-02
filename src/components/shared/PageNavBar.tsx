@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import Icon from "@/components/ui/AppIcon";
 
 const navLinks = [
@@ -18,6 +19,16 @@ export default function PageNavBar() {
     const [scrolled, setScrolled] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
     const pathname = usePathname();
+    const router = useRouter();
+    const { user, isLoading } = useAuth();
+
+    const handleBookAppointment = () => {
+        if (!isLoading && user) {
+            router.push("/appointments");
+        } else {
+            router.push("/auth/login?next=/appointments");
+        }
+    };
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -98,14 +109,15 @@ export default function PageNavBar() {
                                     variant="solid"
                                     className="text-gold"
                                 />
-                                (212) 555-0190
+                                +91 7008355987
                             </a>
-                            <Link
-                                href="/appointments"
+                            <button
+                                type="button"
+                                onClick={handleBookAppointment}
                                 className="btn-gold px-5 py-2.5 rounded-full text-sm font-semibold shadow-gold"
                             >
                                 <span>Book Appointment</span>
-                            </Link>
+                            </button>
                         </div>
 
                         {/* Mobile Toggle */}
@@ -175,15 +187,19 @@ export default function PageNavBar() {
                                 variant="solid"
                                 className="text-gold"
                             />
-                            (212) 555-0190
+                            +91 7008355987
                         </a>
-                        <Link
-                            href="/appointments"
-                            onClick={() => setMobileOpen(false)}
-                            className="block w-full btn-gold py-3 rounded-full text-sm font-semibold shadow-gold text-center"
-                        >
-                            <span>Book Appointment</span>
-                        </Link>
+                        <div>
+                            <button
+                                onClick={() => {
+                                    setMobileOpen(false);
+                                    handleBookAppointment();
+                                }}
+                                className="w-full btn-gold px-4 py-2.5 rounded-full text-sm font-semibold shadow-gold mt-2"
+                            >
+                                Book Appointment
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
