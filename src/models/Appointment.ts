@@ -3,7 +3,8 @@ import mongoose, { Document, Model, Schema } from "mongoose";
 export type AppointmentStatus =
     | "pending"
     | "confirmed"
-    | "in_progress"   // slot time has started — patient is being seen
+    | "arrived"       // patient physically present at clinic (set by receptionist)
+    | "in_progress"   // doctor has started the consultation
     | "cancelled"
     | "completed";
 
@@ -58,6 +59,9 @@ export interface IAppointment extends Document {
     vitals?: IVitals;
     prescriptions: IPrescription[];
     completionDetails?: ICompletionDetails;
+
+    // Check-in tracking
+    arrivedAt?: Date;         // when the receptionist marked the patient as arrived
 
     // Notification tracking
     notifiedAt?: Date;        // when the "slot starting soon" notification was sent
@@ -128,9 +132,10 @@ const AppointmentSchema = new Schema<IAppointment>(
         queueNumber: { type: Number, default: null },
         status: {
             type: String,
-            enum: ["pending", "confirmed", "in_progress", "cancelled", "completed"],
+            enum: ["pending", "confirmed", "arrived", "in_progress", "cancelled", "completed"],
             default: "confirmed",
         },
+        arrivedAt: { type: Date, default: null },
         // Medical data
         vitals: { type: VitalsSchema, default: null },
         prescriptions: { type: [PrescriptionSchema], default: [] },
