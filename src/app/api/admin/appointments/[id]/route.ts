@@ -56,6 +56,15 @@ export const PATCH = withAuth(
             return apiSuccess({ appointment: appt.toObject() });
         }
 
+        // ── Mark patient as arrived ───────────────────────
+        if (action === "arrive") {
+            if (appt.status !== "confirmed") return apiError("Appointment must be confirmed before marking arrived", 400);
+            appt.status = "arrived";
+            (appt as any).arrivedAt = new Date();
+            await appt.save();
+            return apiSuccess({ appointment: appt.toObject() });
+        }
+
         // ── Save vitals ───────────────────────────────────
         if (action === "vitals") {
             const { bloodPressure, temperature, weight, notes: vNotes } = body;
@@ -65,7 +74,7 @@ export const PATCH = withAuth(
                 weight: weight ?? appt.vitals?.weight ?? "",
                 notes: vNotes ?? appt.vitals?.notes ?? "",
             };
-            if (appt.status === "confirmed") appt.status = "in_progress";
+            if (appt.status === "confirmed" || appt.status === "arrived") appt.status = "in_progress";
             await appt.save();
             return apiSuccess({ appointment: appt.toObject() });
         }

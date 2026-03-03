@@ -20,7 +20,7 @@ interface Appointment {
     doctorPreference: string;
     preferredDate: string;
     preferredTime: string;
-    status: "pending" | "confirmed" | "in_progress" | "cancelled" | "completed";
+    status: "pending" | "confirmed" | "arrived" | "in_progress" | "cancelled" | "completed";
     isNewPatient: boolean;
     insuranceProvider?: string;
     notes?: string;
@@ -34,6 +34,7 @@ interface Appointment {
 const STATUS_STYLES: Record<string, string> = {
     pending: "bg-amber-100 text-amber-700",
     confirmed: "bg-blue-100 text-blue-700",
+    arrived: "bg-teal-100 text-teal-700",
     in_progress: "bg-purple-100 text-purple-700",
     completed: "bg-green-100 text-green-700",
     cancelled: "bg-red-100 text-red-600",
@@ -42,7 +43,8 @@ const STATUS_STYLES: Record<string, string> = {
 const STATUS_LABELS: Record<string, string> = {
     pending: "Pending",
     confirmed: "Confirmed",
-    in_progress: "In Progress",
+    arrived: "Arrived",
+    in_progress: "In Consultation",
     completed: "Completed",
     cancelled: "Cancelled",
 };
@@ -260,11 +262,11 @@ export default function AdminAppointmentsPage() {
         } catch { flash("err", "Network error."); }
     };
 
-    // Today's in-progress / confirmed for quick access
+    // Today's active queue (confirmed / arrived / in-progress)
     const todayStr = new Date().toISOString().split("T")[0];
     const todayActive = appointments.filter(
-        (a) => a.preferredDate === todayStr && (a.status === "confirmed" || a.status === "in_progress")
-    ).sort((a, b) => (a.queueNumber ?? 999) - (b.queueNumber ?? 999));
+        (a) => a.preferredDate === todayStr && (a.status === "confirmed" || a.status === "arrived" || a.status === "in_progress")
+    ).sort((a, b) => a.preferredTime.localeCompare(b.preferredTime));
 
     return (
         <div className="flex w-full">
@@ -296,10 +298,10 @@ export default function AdminAppointmentsPage() {
                         </p>
                         <div className="flex flex-wrap gap-3">
                             {todayActive.map((a) => (
-                                <div key={a._id} className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${a.status === "in_progress" ? "border-purple-300 bg-purple-50" : "border-blue-200 bg-blue-50"} cursor-pointer hover:shadow-sm transition-shadow`}
-                                    onClick={() => a.status === "in_progress" ? openLive(a) : openLive(a)}>
+                                <div key={a._id} className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${a.status === "in_progress" ? "border-purple-300 bg-purple-50" : a.status === "arrived" ? "border-teal-300 bg-teal-50" : "border-blue-200 bg-blue-50"} cursor-pointer hover:shadow-sm transition-shadow`}
+                                    onClick={() => openLive(a)}>
                                     {a.queueNumber && (
-                                        <span className={`text-xl font-black ${a.status === "in_progress" ? "text-purple-600" : "text-blue-500"}`}>#{a.queueNumber}</span>
+                                        <span className={`text-xl font-black ${a.status === "in_progress" ? "text-purple-600" : a.status === "arrived" ? "text-teal-600" : "text-blue-500"}`}>#{a.queueNumber}</span>
                                     )}
                                     <div>
                                         <p className="text-sm font-semibold text-navy">{a.firstName} {a.lastName}</p>
@@ -308,6 +310,18 @@ export default function AdminAppointmentsPage() {
                                     <span className={`ml-auto text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_STYLES[a.status]}`}>
                                         {STATUS_LABELS[a.status]}
                                     </span>
+                                    {a.status === "confirmed" && (
+                                        <button onClick={(e) => { e.stopPropagation(); quickStatus(a, "arrived"); }}
+                                            className="ml-1 text-xs bg-teal-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-teal-700 transition-colors whitespace-nowrap">
+                                            Mark Arrived
+                                        </button>
+                                    )}
+                                    {a.status === "arrived" && (
+                                        <button onClick={(e) => { e.stopPropagation(); openLive(a); }}
+                                            className="ml-1 text-xs bg-purple-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-purple-700 transition-colors whitespace-nowrap">
+                                            Start Consultation
+                                        </button>
+                                    )}
                                     {a.status === "in_progress" && (
                                         <button onClick={(e) => { e.stopPropagation(); openClose(a); }}
                                             className="ml-1 text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-green-700 transition-colors whitespace-nowrap">
@@ -328,7 +342,7 @@ export default function AdminAppointmentsPage() {
                     </div>
                     <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="bg-white border border-navy/15 rounded-xl px-3 py-2 text-sm text-navy focus:outline-none focus:border-gold transition-colors">
                         <option value="">All Statuses</option>
-                        {["pending", "confirmed", "in_progress", "completed", "cancelled"].map((s) => (
+                        {["pending", "confirmed", "arrived", "in_progress", "completed", "cancelled"].map((s) => (
                             <option key={s} value={s}>{STATUS_LABELS[s]}</option>
                         ))}
                     </select>
@@ -369,7 +383,14 @@ export default function AdminAppointmentsPage() {
                                             <span>{a.preferredDate} · {a.preferredTime}</span>
                                         </div>
                                         <div className="flex items-center gap-1.5 flex-wrap">
-                                            {(a.status === "confirmed" || a.status === "in_progress") && (
+                                            {/* Mark Arrived */}
+                                            {a.status === "confirmed" && (
+                                                <button onClick={() => quickStatus(a, "arrived")} title="Mark Arrived" className="p-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-600 transition-colors">
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+                                                </button>
+                                            )}
+                                            {/* Start Consultation / Live Visit */}
+                                            {(a.status === "arrived" || a.status === "in_progress") && (
                                                 <button onClick={() => openLive(a)} className="p-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-600 transition-colors">
                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 9.75v9A2.25 2.25 0 004.5 18.75z" /></svg>
                                                 </button>
@@ -431,9 +452,15 @@ export default function AdminAppointmentsPage() {
                                             </td>
                                             <td className="px-5 py-4">
                                                 <div className="flex items-center justify-end gap-1 flex-wrap">
-                                                    {/* Start visit */}
-                                                    {(a.status === "confirmed" || a.status === "in_progress") && (
-                                                        <button onClick={() => openLive(a)} title="Live Visit" className="p-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-600 transition-colors">
+                                                    {/* Mark Arrived */}
+                                                    {a.status === "confirmed" && (
+                                                        <button onClick={() => quickStatus(a, "arrived")} title="Mark Arrived" className="p-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-600 transition-colors">
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+                                                        </button>
+                                                    )}
+                                                    {/* Start Consultation / Live Visit */}
+                                                    {(a.status === "arrived" || a.status === "in_progress") && (
+                                                        <button onClick={() => openLive(a)} title="Start Consultation" className="p-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-600 transition-colors">
                                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 9.75v9A2.25 2.25 0 004.5 18.75z" /></svg>
                                                         </button>
                                                     )}
@@ -483,7 +510,7 @@ export default function AdminAppointmentsPage() {
                     <div className="space-y-4">
                         <Field label="Status">
                             <select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-navy/15 bg-white text-navy text-sm focus:outline-none focus:border-gold transition-all">
-                                {["pending", "confirmed", "in_progress", "completed", "cancelled"].map((s) => (
+                                {["pending", "confirmed", "arrived", "in_progress", "completed", "cancelled"].map((s) => (
                                     <option key={s} value={s}>{STATUS_LABELS[s]}</option>
                                 ))}
                             </select>
@@ -589,15 +616,28 @@ export default function AdminAppointmentsPage() {
                             )}
                         </div>
 
-                        {/* Mark as in-progress if still confirmed */}
-                        {selected.status === "confirmed" && (
+                        {/* Arrived → Start Consultation */}
+                        {selected.status === "arrived" && (
                             <div className="flex gap-3 pt-2 border-t border-navy/10">
-                                <button onClick={() => { quickStatus(selected, "in_progress"); reloadSelected(selected._id); }}
+                                <button onClick={async () => { await quickStatus(selected, "in_progress"); await reloadSelected(selected._id); }}
                                     className="flex-1 bg-purple-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-purple-700 transition-colors">
-                                    Mark as In Progress
+                                    Start Consultation
                                 </button>
                                 <button onClick={() => openClose(selected)} className="flex-1 bg-green-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-green-700 transition-colors">
-                                    Close Visit Now
+                                    Complete Visit
+                                </button>
+                            </div>
+                        )}
+                        {/* Confirmed → Mark Arrived or start directly */}
+                        {selected.status === "confirmed" && (
+                            <div className="flex gap-3 pt-2 border-t border-navy/10">
+                                <button onClick={async () => { await quickStatus(selected, "arrived"); await reloadSelected(selected._id); }}
+                                    className="flex-1 bg-teal-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-teal-700 transition-colors">
+                                    Mark as Arrived
+                                </button>
+                                <button onClick={async () => { await quickStatus(selected, "in_progress"); await reloadSelected(selected._id); }}
+                                    className="flex-1 bg-purple-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-purple-700 transition-colors">
+                                    Start Consultation
                                 </button>
                             </div>
                         )}
