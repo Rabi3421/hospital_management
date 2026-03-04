@@ -348,14 +348,14 @@ export default function AppointmentsPageContent() {
                             </div>
                         )}
 
-                        <div className="flex gap-3">
+                        <div className="flex flex-col sm:flex-row items-center gap-3">
                             {successData.linked && (
-                                <button onClick={() => router.push("/dashboard/user/appointments")} className="flex-1 btn-primary py-3 rounded-xl text-sm font-semibold">
-                                    View in Dashboard
+                                <button onClick={() => router.push("/dashboard/user/appointments")} className="w-full sm:flex-1 btn-primary py-3 rounded-xl text-sm font-semibold flex items-center justify-center">
+                                    <span>View in Dashboard</span>
                                 </button>
                             )}
-                            <button onClick={() => setSuccessData(null)} className={`${successData.linked ? "flex-1 border border-navy/20 text-navy hover:bg-navy/5" : "w-full btn-primary"} py-3 rounded-xl text-sm font-semibold transition-colors`}>
-                                {successData.linked ? "Close" : "Done"}
+                            <button onClick={() => setSuccessData(null)} className={`${successData.linked ? "w-full sm:flex-1 border border-navy/20 text-navy hover:bg-navy/5 flex items-center justify-center" : "w-full btn-primary flex items-center justify-center"} py-3 rounded-xl text-sm font-semibold transition-colors`}>
+                                <span>{successData.linked ? "Close" : "Done"}</span>
                             </button>
                         </div>
                     </div>

@@ -132,23 +132,29 @@ export default function UserDashboard() {
                             {/* Next appointment */}
                             <div className="glass-card rounded-2xl p-4 sm:p-6">
                                 <h2 className="font-fraunces text-base sm:text-lg font-semibold text-navy mb-4 sm:mb-5">Next Appointment</h2>
-                                <div className="bg-navy rounded-xl p-5 text-center mb-4">
-                                    <p className="text-white/60 text-sm mb-1">Scheduled for</p>
-                                    <p className="font-fraunces text-gold text-xl font-bold">
-                                        {new Date(stats.nextAppointment.date).toLocaleDateString("en-US", { month: "long", day: "numeric" })}
-                                    </p>
-                                    <p className="text-white/80 text-sm mt-1">{stats.nextAppointment.time}</p>
-                                </div>
-                                <div className="space-y-2">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-navy/50">Doctor</span>
-                                        <span className="text-navy font-medium">{stats.nextAppointment.doctor}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-navy/50">Type</span>
-                                        <span className="text-navy font-medium">{stats.nextAppointment.type}</span>
-                                    </div>
-                                </div>
+                                {stats.nextAppointment ? (
+                                    <>
+                                        <div className="bg-navy rounded-xl p-5 text-center mb-4">
+                                            <p className="text-white/60 text-sm mb-1">Scheduled for</p>
+                                            <p className="font-fraunces text-gold text-xl font-bold">
+                                                {new Date(stats.nextAppointment.date).toLocaleDateString("en-US", { month: "long", day: "numeric" })}
+                                            </p>
+                                            <p className="text-white/80 text-sm mt-1">{stats.nextAppointment.time}</p>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-navy/50">Doctor</span>
+                                                <span className="text-navy font-medium">{stats.nextAppointment.doctor}</span>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-navy/50">Type</span>
+                                                <span className="text-navy font-medium">{stats.nextAppointment.type}</span>
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <p className="text-navy/50 text-sm text-center py-4">No upcoming appointments</p>
+                                )}
                             </div>
                         </div>
 
