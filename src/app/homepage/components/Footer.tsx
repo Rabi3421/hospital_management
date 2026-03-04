@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import Icon from "@/components/ui/AppIcon";
+import { useClinicSettings } from "@/context/useClinicSettings";
 
 export default function Footer() {
   const year = 2026;
+  const { clinic } = useClinicSettings();
 
   return (
     <footer className="bg-navy border-t border-white/10">
@@ -30,8 +32,7 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-white/50 text-sm leading-relaxed mb-6 max-w-xs">
-              Manhattan's premier dental hospital — combining 18 years of clinical excellence
-              with cutting-edge technology and genuine compassionate care.
+              {clinic.tagline}
             </p>
             <div className="flex items-center gap-3">
               {[
@@ -115,24 +116,24 @@ export default function Footer() {
               <div className="flex items-start gap-3">
                 <Icon name="MapPinIcon" size={16} variant="solid" className="text-gold mt-0.5 flex-shrink-0" />
                 <p className="text-white/50 text-sm">
-                  485 Madison Avenue, Suite 1200<br />New York, NY 10022
+                  {clinic.address}<br />{clinic.city}
                 </p>
               </div>
               <div className="flex items-center gap-3">
                 <Icon name="PhoneIcon" size={16} variant="solid" className="text-gold flex-shrink-0" />
-                <a href="tel:+12125550190" className="text-white/50 hover:text-gold text-sm transition-colors">
-                  +91 7008355987
+                <a href={`tel:${clinic.phone}`} className="text-white/50 hover:text-gold text-sm transition-colors">
+                  {clinic.phone}
                 </a>
               </div>
               <div className="flex items-center gap-3">
                 <Icon name="EnvelopeIcon" size={16} variant="solid" className="text-gold flex-shrink-0" />
-                <a href="mailto:hello@dentalcarenyc.com" className="text-white/50 hover:text-gold text-sm transition-colors">
-                  hello@dentalcarenyc.com
+                <a href={`mailto:${clinic.email}`} className="text-white/50 hover:text-gold text-sm transition-colors">
+                  {clinic.email}
                 </a>
               </div>
               <div className="flex items-center gap-3">
                 <Icon name="ClockIcon" size={16} variant="solid" className="text-gold flex-shrink-0" />
-                <p className="text-white/50 text-sm">Mon–Sat: 8AM–8PM</p>
+                <p className="text-white/50 text-sm">{clinic.workDays}: {clinic.openTime}–{clinic.closeTime}</p>
               </div>
             </div>
 
@@ -142,11 +143,11 @@ export default function Footer() {
                 Dental Emergency?
               </p>
               <a
-                href="tel:+12125550911"
+                href={`tel:${clinic.emergencyPhone}`}
                 className="text-white font-semibold text-sm hover:text-gold transition-colors flex items-center gap-2"
               >
                 <Icon name="PhoneIcon" size={14} variant="solid" className="text-gold" />
-                Call +91 7008355987 — 24/7
+                Call {clinic.emergencyPhone} — 24/7
               </a>
             </div>
           </div>

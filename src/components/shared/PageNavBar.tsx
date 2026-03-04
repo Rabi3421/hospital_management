@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Icon from "@/components/ui/AppIcon";
+import { useClinicSettings } from "@/context/useClinicSettings";
 
 const navLinks = [
     { label: "Home", href: "/homepage" },
@@ -21,6 +22,7 @@ export default function PageNavBar() {
     const pathname = usePathname();
     const router = useRouter();
     const { user, isLoading } = useAuth();
+    const { clinic } = useClinicSettings();
 
     const handleBookAppointment = () => {
         if (!isLoading && user) {
@@ -99,7 +101,7 @@ export default function PageNavBar() {
                         {/* CTA */}
                         <div className="hidden lg:flex items-center gap-3">
                             <a
-                                href="tel:+12125550190"
+                                href={`tel:${clinic.phone.replace(/\s+/g, "")}`}
                                 className={`flex items-center gap-2 text-sm font-medium transition-colors ${scrolled ? "text-navy" : "text-white/90 hover:text-white"
                                     }`}
                             >
@@ -109,7 +111,7 @@ export default function PageNavBar() {
                                     variant="solid"
                                     className="text-gold"
                                 />
-                                +91 7008355987
+                                {clinic.phone}
                             </a>
                             <button
                                 type="button"
@@ -178,7 +180,7 @@ export default function PageNavBar() {
                     </nav>
                     <div className="p-6 border-t border-cream-dark space-y-3">
                         <a
-                            href="tel:+12125550190"
+                            href={`tel:${clinic.phone.replace(/\s+/g, "")}`}
                             className="flex items-center gap-2 text-sm text-navy font-medium"
                         >
                             <Icon
@@ -187,7 +189,7 @@ export default function PageNavBar() {
                                 variant="solid"
                                 className="text-gold"
                             />
-                            +91 7008355987
+                            {clinic.phone}
                         </a>
                         <div>
                             <button

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Icon from "@/components/ui/AppIcon";
 import { useAuth } from "@/context/AuthContext";
+import { useClinicSettings } from "@/context/useClinicSettings";
 
 // page: true → navigates to a new page; page: false → smooth-scrolls on homepage
 const navLinks = [
@@ -21,6 +22,7 @@ export default function NavBar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user } = useAuth();
   const router = useRouter();
+  const { clinic } = useClinicSettings();
 
   const handleBookAppointment = () => {
     setMobileOpen(false);
@@ -78,14 +80,14 @@ export default function NavBar() {
               <div className="flex flex-col leading-none">
                 <span className={`font-display font-bold text-[15px] tracking-tight whitespace-nowrap transition-colors duration-300 ${scrolled ? "text-navy" : "text-white"
                   }`}>
-                  Dr. Avnish Kumar
+                  {clinic.clinicName}
                 </span>
                 <span className={`flex items-center gap-1 text-[10px] font-medium mt-[3px] whitespace-nowrap transition-colors duration-300 ${scrolled ? "text-gold" : "text-gold-light"
                   }`}>
                   <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z" />
                   </svg>
-                  +91 9534110678
+                  {clinic.phone}
                 </span>
               </div>
             </Link>
@@ -114,11 +116,11 @@ export default function NavBar() {
             {/* ── Desktop CTA ── */}
             <div className="hidden lg:flex items-center gap-3">
               {/* Phone */}
-              <a href="tel:+919534110678"
+              <a href={`tel:${clinic.phone.replace(/\s+/g, "")}`}
                 className={`flex items-center gap-1.5 text-[13px] font-medium transition-colors ${scrolled ? "text-navy/70 hover:text-navy" : "text-white/80 hover:text-white"
                   }`}>
                 <Icon name="PhoneIcon" size={14} variant="solid" className={scrolled ? "text-gold" : "text-gold-light"} />
-                +91 9534110678
+                {clinic.phone}
               </a>
 
               {/* Divider */}
@@ -215,8 +217,8 @@ export default function NavBar() {
                 </svg>
               </div>
               <div>
-                <p className="text-[13px] font-bold text-navy leading-none">Dr. Avnish Kumar</p>
-                <p className="text-[10px] text-gold font-medium mt-0.5">+91 9534110678</p>
+                <p className="text-[13px] font-bold text-navy leading-none">{clinic.clinicName}</p>
+                <p className="text-[10px] text-gold font-medium mt-0.5">{clinic.phone}</p>
               </div>
             </div>
             <button onClick={() => setMobileOpen(false)}
@@ -244,10 +246,10 @@ export default function NavBar() {
 
           {/* Drawer Footer */}
           <div className="px-4 py-5 border-t border-gray-100 space-y-2.5">
-            <a href="tel:+919534110678"
+            <a href={`tel:${clinic.phone.replace(/\s+/g, "")}`}
               className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gray-50 text-[12px] text-navy font-medium">
               <Icon name="PhoneIcon" size={14} variant="solid" className="text-gold" />
-              +91 9534110678
+              {clinic.phone}
             </a>
 
             {user ? (
