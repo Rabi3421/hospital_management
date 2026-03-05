@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Icon from "@/components/ui/AppIcon";
 import { useAuth } from "@/context/AuthContext";
 import { useClinicSettings } from "@/context/useClinicSettings";
 
-// page: true → navigates to a new page; page: false → smooth-scrolls on homepage
 const navLinks = [
   { label: "Services", href: "/services", page: true },
   { label: "About Us", href: "/about", page: true },
@@ -18,19 +17,25 @@ const navLinks = [
 ];
 
 export default function NavBar() {
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const { user } = useAuth();
-  const router = useRouter();
-  const { clinic } = useClinicSettings();
+  const [scrolled, setScrolled]       = useState(false);
+  const [mobileOpen, setMobileOpen]   = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const { user, logout }              = useAuth();
+  const router                        = useRouter();
+  const { clinic }                    = useClinicSettings();
+  const dropdownRef                   = useRef<HTMLDivElement>(null);
+
+  const dashboardHref = user
+    ? `/dashboard/${user.role === "super_admin" ? "super-admin" : user.role === "admin" ? "admin" : "user"}`
+    : "/auth/login";
+
+  const userInitials = user
+    ? user.name.split(" ").slice(0, 2).map((n: string) => n[0]).join("").toUpperCase()
+    : "";
 
   const handleBookAppointment = () => {
     setMobileOpen(false);
-    if (user) {
-      router.push("/appointments");
-    } else {
-      router.push("/auth/login?next=/appointments");
-    }
+    router.push(user ? "/appointments" : "/auth/login?next=/appointments");
   };
 
   useEffect(() => {
@@ -39,51 +44,45 @@ export default function NavBar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   const handleNavClick = (href: string) => {
     setMobileOpen(false);
     const el = document.querySelector(href);
     if (el) {
-      const offset = 80;
-      const top = el.getBoundingClientRect().top + window.scrollY - offset;
+      const top = el.getBoundingClientRect().top + window.scrollY - 80;
       window.scrollTo({ top, behavior: "smooth" });
     }
   };
 
   return (
     <>
-      <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled
-          ? "bg-white/95 backdrop-blur-xl shadow-lg border-b border-gray-100"
-          : "bg-transparent"
-          }`}
-      >
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? "bg-white/95 backdrop-blur-xl shadow-lg border-b border-gray-100" : "bg-transparent"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-[68px]">
 
-            {/* ── Logo / Brand ── */}
+            {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group">
-              {/* Avatar */}
-              <div className={`relative w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all duration-300 ${scrolled
-                ? "bg-navy shadow-md"
-                : "bg-white/15 backdrop-blur-md border border-white/20"
-                }`}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  className={scrolled ? "text-gold" : "text-white"}>
-                  <path d="M12 2C9.5 2 7.5 3.5 6.5 5.5C5.5 3.5 3.5 2 3 2C1.5 2 0 3.5 0 5.5C0 9 3 12 6.5 16C7.5 17.5 9 19.5 12 22C15 19.5 16.5 17.5 17.5 16C21 12 24 9 24 5.5C24 3.5 22.5 2 21 2C20.5 2 18.5 3.5 17.5 5.5C16.5 3.5 14.5 2 12 2Z"
-                    fill="currentColor" />
+              <div className={`relative w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all duration-300 ${scrolled ? "bg-navy shadow-md" : "bg-white/15 backdrop-blur-md border border-white/20"}`}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className={scrolled ? "text-gold" : "text-white"}>
+                  <path d="M12 2C9.5 2 7.5 3.5 6.5 5.5C5.5 3.5 3.5 2 3 2C1.5 2 0 3.5 0 5.5C0 9 3 12 6.5 16C7.5 17.5 9 19.5 12 22C15 19.5 16.5 17.5 17.5 16C21 12 24 9 24 5.5C24 3.5 22.5 2 21 2C20.5 2 18.5 3.5 17.5 5.5C16.5 3.5 14.5 2 12 2Z" fill="currentColor" />
                 </svg>
-                {/* Gold dot badge */}
                 <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-gold border-2 border-white" />
               </div>
-
-              {/* Name + Phone */}
               <div className="flex flex-col leading-none">
-                <span className={`font-display font-bold text-[15px] tracking-tight whitespace-nowrap transition-colors duration-300 ${scrolled ? "text-navy" : "text-white"
-                  }`}>
+                <span className={`font-display font-bold text-[15px] tracking-tight whitespace-nowrap transition-colors duration-300 ${scrolled ? "text-navy" : "text-white"}`}>
                   {clinic.clinicName}
                 </span>
-                <span className={`flex items-center gap-1 text-[10px] font-medium mt-[3px] whitespace-nowrap transition-colors duration-300 ${scrolled ? "text-gold" : "text-gold-light"
-                  }`}>
+                <span className={`flex items-center gap-1 text-[10px] font-medium mt-[3px] whitespace-nowrap transition-colors duration-300 ${scrolled ? "text-gold" : "text-gold-light"}`}>
                   <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z" />
                   </svg>
@@ -92,20 +91,18 @@ export default function NavBar() {
               </div>
             </Link>
 
-            {/* ── Desktop Nav Links ── */}
+            {/* Desktop Nav Links */}
             <div className="hidden lg:flex items-center gap-7">
               {navLinks.map((link) =>
                 link.page ? (
                   <Link key={link.label} href={link.href}
-                    className={`relative text-[13px] font-medium tracking-wide transition-colors duration-200 group ${scrolled ? "text-navy/70 hover:text-navy" : "text-white/80 hover:text-white"
-                      }`}>
+                    className={`relative text-[13px] font-medium tracking-wide transition-colors duration-200 group ${scrolled ? "text-navy/70 hover:text-navy" : "text-white/80 hover:text-white"}`}>
                     {link.label}
                     <span className="absolute -bottom-0.5 left-0 w-0 h-[1.5px] bg-gold rounded-full transition-all duration-300 group-hover:w-full" />
                   </Link>
                 ) : (
                   <button key={link.label} onClick={() => handleNavClick(link.href)}
-                    className={`relative text-[13px] font-medium tracking-wide transition-colors duration-200 group ${scrolled ? "text-navy/70 hover:text-navy" : "text-white/80 hover:text-white"
-                      }`}>
+                    className={`relative text-[13px] font-medium tracking-wide transition-colors duration-200 group ${scrolled ? "text-navy/70 hover:text-navy" : "text-white/80 hover:text-white"}`}>
                     {link.label}
                     <span className="absolute -bottom-0.5 left-0 w-0 h-[1.5px] bg-gold rounded-full transition-all duration-300 group-hover:w-full" />
                   </button>
@@ -113,83 +110,105 @@ export default function NavBar() {
               )}
             </div>
 
-            {/* ── Desktop CTA ── */}
+            {/* Desktop CTA */}
             <div className="hidden lg:flex items-center gap-3">
               {/* Phone */}
               <a href={`tel:${clinic.phone.replace(/\s+/g, "")}`}
-                className={`flex items-center gap-1.5 text-[13px] font-medium transition-colors ${scrolled ? "text-navy/70 hover:text-navy" : "text-white/80 hover:text-white"
-                  }`}>
+                className={`flex items-center gap-1.5 text-[13px] font-medium transition-colors ${scrolled ? "text-navy/70 hover:text-navy" : "text-white/80 hover:text-white"}`}>
                 <Icon name="PhoneIcon" size={14} variant="solid" className={scrolled ? "text-gold" : "text-gold-light"} />
                 {clinic.phone}
               </a>
 
-              {/* Divider */}
               <span className={`w-px h-5 ${scrolled ? "bg-navy/15" : "bg-white/20"}`} />
 
+              {/* Profile avatar + dropdown (logged in) OR My Account (logged out) */}
               {user ? (
-                <Link
-                  href={`/dashboard/${user.role === "super_admin" ? "super-admin" : user.role === "admin" ? "admin" : "user"}`}
-                  className={`flex items-center gap-1.5 text-[13px] font-semibold px-4 py-2 rounded-xl border transition-all ${scrolled
-                    ? "border-navy/15 text-navy bg-navy/5 hover:bg-navy/10"
-                    : "border-white/25 text-white bg-white/10 hover:bg-white/20"
-                    }`}>
-                  <Icon name="UserCircleIcon" size={15} variant="solid" className={scrolled ? "text-navy" : "text-white"} />
-                  Dashboard
-                </Link>
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={() => setProfileOpen((p) => !p)}
+                    className={`flex items-center gap-2 px-2 py-1.5 rounded-xl border transition-all ${scrolled ? "border-navy/15 bg-navy/5 hover:bg-navy/10" : "border-white/25 bg-white/10 hover:bg-white/20"}`}
+                  >
+                    {/* Avatar circle */}
+                    <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold flex-shrink-0 ${scrolled ? "bg-navy text-white" : "bg-gold text-navy"}`}>
+                      {userInitials}
+                    </span>
+                    <span className={`text-[13px] font-semibold max-w-[80px] truncate ${scrolled ? "text-navy" : "text-white"}`}>
+                      {user.name.split(" ")[0]}
+                    </span>
+                    <svg className={`w-3.5 h-3.5 flex-shrink-0 transition-transform ${profileOpen ? "rotate-180" : ""} ${scrolled ? "text-navy/40" : "text-white/60"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {/* Dropdown panel */}
+                  {profileOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-xl border border-navy/8 overflow-hidden z-50">
+                      {/* User info */}
+                      <div className="px-4 py-3 border-b border-navy/6 bg-navy/[0.02]">
+                        <p className="text-xs font-bold text-navy truncate">{user.name}</p>
+                        <p className="text-[10px] text-navy/40 truncate mt-0.5">{user.email}</p>
+                        <span className="inline-block mt-1.5 px-2 py-0.5 rounded-full text-[9px] font-semibold bg-gold/15 text-gold capitalize">
+                          {user.role?.replace("_", " ")}
+                        </span>
+                      </div>
+                      {/* Actions */}
+                      <div className="p-1.5 space-y-0.5">
+                        <Link href={dashboardHref} onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl text-[13px] font-medium text-navy hover:bg-navy/5 transition-colors">
+                          <svg className="w-4 h-4 text-navy/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm0 9.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zm9.75-9.75A2.25 2.25 0 0115.75 3.75H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zm0 9.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                          </svg>
+                          Dashboard
+                        </Link>
+                        <div className="h-px bg-navy/6 mx-2" />
+                        <button onClick={() => { setProfileOpen(false); logout(); }}
+                          className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl text-[13px] font-medium text-red-500 hover:bg-red-50 transition-colors">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                          </svg>
+                          Sign Out
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <Link href="/auth/login"
-                  className={`flex items-center gap-1.5 text-[13px] font-semibold px-4 py-2 rounded-xl border transition-all ${scrolled
-                    ? "border-navy/15 text-navy bg-navy/5 hover:bg-navy/10"
-                    : "border-white/25 text-white bg-white/10 hover:bg-white/20"
-                    }`}>
+                  className={`flex items-center gap-1.5 text-[13px] font-semibold px-4 py-2 rounded-xl border transition-all ${scrolled ? "border-navy/15 text-navy bg-navy/5 hover:bg-navy/10" : "border-white/25 text-white bg-white/10 hover:bg-white/20"}`}>
                   <Icon name="ArrowRightOnRectangleIcon" size={15} className={scrolled ? "text-navy" : "text-white"} />
                   My Account
                 </Link>
               )}
 
-              <Link href="/appointments"
+              <button onClick={handleBookAppointment}
                 className="flex items-center gap-1.5 btn-gold px-5 py-2 rounded-xl text-[13px] font-bold shadow-gold tracking-wide">
                 <Icon name="CalendarDaysIcon" size={14} variant="solid" />
                 Book Appointment
-              </Link>
+              </button>
             </div>
 
-            {/* ── Mobile Right: Account pill + Hamburger ── */}
+            {/* Mobile Right: avatar pill + hamburger */}
             <div className="flex items-center gap-2 lg:hidden">
               {user ? (
-                <Link
-                  href={`/dashboard/${user.role === "super_admin" ? "super-admin" : user.role === "admin" ? "admin" : "user"}`}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold whitespace-nowrap border transition-all ${scrolled
-                    ? "border-navy/15 bg-navy/5 text-navy"
-                    : "border-white/20 bg-white/10 text-white backdrop-blur-md"
-                    }`}>
-                  {/* Initials avatar */}
-                  <span className={`w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-bold flex-shrink-0 ${scrolled ? "bg-navy text-white" : "bg-gold text-navy"
-                    }`}>
-                    {user.name.split(" ").slice(0, 2).map(n => n[0]).join("").toUpperCase()}
+                <Link href={dashboardHref}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold whitespace-nowrap border transition-all ${scrolled ? "border-navy/15 bg-navy/5 text-navy" : "border-white/20 bg-white/10 text-white backdrop-blur-md"}`}>
+                  <span className={`w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-bold flex-shrink-0 ${scrolled ? "bg-navy text-white" : "bg-gold text-navy"}`}>
+                    {userInitials}
                   </span>
-                  Dashboard
+                  {user.name.split(" ")[0]}
                 </Link>
               ) : (
                 <Link href="/auth/login"
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold whitespace-nowrap border transition-all ${scrolled
-                    ? "border-navy/15 bg-navy/5 text-navy"
-                    : "border-white/20 bg-white/10 text-white backdrop-blur-md"
-                    }`}>
-                  <span className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 ${scrolled ? "bg-navy" : "bg-white/20"
-                    }`}>
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold whitespace-nowrap border transition-all ${scrolled ? "border-navy/15 bg-navy/5 text-navy" : "border-white/20 bg-white/10 text-white backdrop-blur-md"}`}>
+                  <span className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 ${scrolled ? "bg-navy" : "bg-white/20"}`}>
                     <Icon name="UserIcon" size={11} className={scrolled ? "text-gold" : "text-white"} />
                   </span>
                   My Account
                 </Link>
               )}
 
-              <button
-                onClick={() => setMobileOpen(!mobileOpen)}
-                className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all ${scrolled
-                  ? "bg-navy/8 text-navy hover:bg-navy/15"
-                  : "bg-white/12 text-white hover:bg-white/20 backdrop-blur-md"
-                  }`}
+              <button onClick={() => setMobileOpen(!mobileOpen)}
+                className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all ${scrolled ? "bg-navy/8 text-navy hover:bg-navy/15" : "bg-white/12 text-white hover:bg-white/20 backdrop-blur-md"}`}
                 aria-label="Toggle menu">
                 <Icon name={mobileOpen ? "XMarkIcon" : "Bars3Icon"} size={20} />
               </button>
@@ -199,13 +218,9 @@ export default function NavBar() {
         </div>
       </nav>
 
-      {/* ── Mobile Drawer ── */}
-      <div className={`fixed inset-0 z-[60] lg:hidden transition-all duration-300 ${mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}>
-        {/* Backdrop */}
+      {/* Mobile Drawer */}
+      <div className={`fixed inset-0 z-[60] lg:hidden transition-all duration-300 ${mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
         <div className="absolute inset-0 bg-navy/70 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-
-        {/* Panel */}
         <div className={`mobile-menu absolute top-0 right-0 h-full w-[300px] bg-white flex flex-col shadow-2xl ${mobileOpen ? "open" : ""}`}>
 
           {/* Drawer Header */}
@@ -253,13 +268,28 @@ export default function NavBar() {
             </a>
 
             {user ? (
-              <Link
-                href={`/dashboard/${user.role === "super_admin" ? "super-admin" : user.role === "admin" ? "admin" : "user"}`}
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center justify-center gap-2 w-full border border-navy/15 bg-navy/5 text-navy py-2.5 rounded-xl text-[13px] font-semibold hover:bg-navy/10 transition-colors">
-                <Icon name="UserCircleIcon" size={15} variant="solid" className="text-navy" />
-                Go to Dashboard
-              </Link>
+              <div className="space-y-2">
+                {/* User info */}
+                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-navy/[0.04]">
+                  <span className="w-8 h-8 rounded-lg bg-navy text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0">{userInitials}</span>
+                  <div className="min-w-0">
+                    <p className="text-[12px] font-bold text-navy truncate">{user.name}</p>
+                    <p className="text-[10px] text-navy/40 truncate">{user.email}</p>
+                  </div>
+                </div>
+                <Link href={dashboardHref} onClick={() => setMobileOpen(false)}
+                  className="flex items-center justify-center gap-2 w-full border border-navy/15 bg-navy/5 text-navy py-2.5 rounded-xl text-[13px] font-semibold hover:bg-navy/10 transition-colors">
+                  <Icon name="UserCircleIcon" size={15} variant="solid" className="text-navy" />
+                  Go to Dashboard
+                </Link>
+                <button onClick={() => { setMobileOpen(false); logout(); }}
+                  className="flex items-center justify-center gap-2 w-full border border-red-200 bg-red-50 text-red-500 py-2.5 rounded-xl text-[13px] font-semibold hover:bg-red-100 transition-colors">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                  </svg>
+                  Sign Out
+                </button>
+              </div>
             ) : (
               <Link href="/auth/login" onClick={() => setMobileOpen(false)}
                 className="flex items-center justify-center gap-2 w-full border border-navy/15 bg-navy/5 text-navy py-2.5 rounded-xl text-[13px] font-semibold hover:bg-navy/10 transition-colors">
@@ -268,11 +298,11 @@ export default function NavBar() {
               </Link>
             )}
 
-            <Link href="/appointments" onClick={() => setMobileOpen(false)}
+            <button onClick={handleBookAppointment}
               className="flex items-center justify-center gap-2 w-full btn-gold py-2.5 rounded-xl text-[13px] font-bold shadow-gold text-center">
               <Icon name="CalendarDaysIcon" size={14} variant="solid" />
               Book Appointment
-            </Link>
+            </button>
           </div>
         </div>
       </div>
