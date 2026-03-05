@@ -8,12 +8,12 @@ import Icon from "@/components/ui/AppIcon";
 import { useClinicSettings } from "@/context/useClinicSettings";
 
 const navLinks = [
-    { label: "Home", href: "/homepage" },
-    { label: "Services", href: "/services" },
-    { label: "About Us", href: "/about" },
-    { label: "Our Doctors", href: "/doctors" },
-    { label: "Appointments", href: "/appointments" },
-    { label: "Contact", href: "/contact" },
+    { label: "Home", href: "/homepage", protected: false },
+    { label: "Services", href: "/services", protected: false },
+    { label: "About Us", href: "/about", protected: false },
+    { label: "Our Doctors", href: "/doctors", protected: false },
+    { label: "Appointments", href: "/appointments", protected: true },
+    { label: "Contact", href: "/contact", protected: false },
 ];
 
 export default function PageNavBar() {
@@ -25,6 +25,7 @@ export default function PageNavBar() {
     const { clinic } = useClinicSettings();
 
     const handleBookAppointment = () => {
+        setMobileOpen(false);
         if (!isLoading && user) {
             router.push("/appointments");
         } else {
@@ -82,20 +83,35 @@ export default function PageNavBar() {
 
                         {/* Desktop Links */}
                         <div className="hidden lg:flex items-center gap-7">
-                            {navLinks.map((link) => (
-                                <Link
-                                    key={link.label}
-                                    href={link.href}
-                                    className={`nav-link text-sm font-medium transition-colors duration-200 ${pathname === link.href
-                                            ? "text-gold"
-                                            : scrolled
-                                                ? "text-navy-600 hover:text-navy"
-                                                : "text-white/85 hover:text-white"
-                                        }`}
-                                >
-                                    {link.label}
-                                </Link>
-                            ))}
+                            {navLinks.map((link) =>
+                                link.protected ? (
+                                    <button
+                                        key={link.label}
+                                        onClick={handleBookAppointment}
+                                        className={`nav-link text-sm font-medium transition-colors duration-200 ${pathname === link.href
+                                                ? "text-gold"
+                                                : scrolled
+                                                    ? "text-navy-600 hover:text-navy"
+                                                    : "text-white/85 hover:text-white"
+                                            }`}
+                                    >
+                                        {link.label}
+                                    </button>
+                                ) : (
+                                    <Link
+                                        key={link.label}
+                                        href={link.href}
+                                        className={`nav-link text-sm font-medium transition-colors duration-200 ${pathname === link.href
+                                                ? "text-gold"
+                                                : scrolled
+                                                    ? "text-navy-600 hover:text-navy"
+                                                    : "text-white/85 hover:text-white"
+                                            }`}
+                                    >
+                                        {link.label}
+                                    </Link>
+                                )
+                            )}
                         </div>
 
                         {/* CTA */}
@@ -164,19 +180,32 @@ export default function PageNavBar() {
                         </button>
                     </div>
                     <nav className="flex-1 p-6 space-y-1 overflow-y-auto">
-                        {navLinks.map((link) => (
-                            <Link
-                                key={link.label}
-                                href={link.href}
-                                onClick={() => setMobileOpen(false)}
-                                className={`block px-4 py-3 rounded-xl font-medium transition-colors ${pathname === link.href
-                                        ? "bg-cream text-gold"
-                                        : "text-navy hover:bg-cream"
-                                    }`}
-                            >
-                                {link.label}
-                            </Link>
-                        ))}
+                        {navLinks.map((link) =>
+                            link.protected ? (
+                                <button
+                                    key={link.label}
+                                    onClick={handleBookAppointment}
+                                    className={`block w-full text-left px-4 py-3 rounded-xl font-medium transition-colors ${pathname === link.href
+                                            ? "bg-cream text-gold"
+                                            : "text-navy hover:bg-cream"
+                                        }`}
+                                >
+                                    {link.label}
+                                </button>
+                            ) : (
+                                <Link
+                                    key={link.label}
+                                    href={link.href}
+                                    onClick={() => setMobileOpen(false)}
+                                    className={`block px-4 py-3 rounded-xl font-medium transition-colors ${pathname === link.href
+                                            ? "bg-cream text-gold"
+                                            : "text-navy hover:bg-cream"
+                                        }`}
+                                >
+                                    {link.label}
+                                </Link>
+                            )
+                        )}
                     </nav>
                     <div className="p-6 border-t border-cream-dark space-y-3">
                         <a
@@ -193,10 +222,7 @@ export default function PageNavBar() {
                         </a>
                         <div>
                             <button
-                                onClick={() => {
-                                    setMobileOpen(false);
-                                    handleBookAppointment();
-                                }}
+                                onClick={handleBookAppointment}
                                 className="w-full btn-gold px-4 py-2.5 rounded-full text-sm font-semibold shadow-gold mt-2"
                             >
                                 Book Appointment

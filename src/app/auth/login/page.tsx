@@ -263,7 +263,10 @@ function LoginForm() {
 
                     <p className="mt-8 text-center text-navy/50 text-sm">
                         Don&apos;t have an account?{" "}
-                        <Link href="/auth/register" className="text-gold font-medium hover:underline">
+                        <Link
+                            href={searchParams.get("next") ? `/auth/register?next=${encodeURIComponent(searchParams.get("next")!)}` : "/auth/register"}
+                            className="text-gold font-medium hover:underline"
+                        >
                             Create one
                         </Link>
                     </p>

@@ -113,6 +113,9 @@ export default function AppointmentsPageContent() {
         queueNumber: number | null;
         slotTime: string;
         date: string;
+        patientName: string;
+        service: string;
+        doctor: string;
     } | null>(null);
 
     // Slot picking state
@@ -273,7 +276,17 @@ export default function AppointmentsPageContent() {
             const { appointmentId, guestToken, linked, confirmed, queueNumber, slotTime, date } = json.data;
             if (!linked && guestToken) storeGuestToken(guestToken);
 
-            setSuccessData({ appointmentId, linked: !!linked, confirmed, queueNumber, slotTime, date });
+            setSuccessData({
+                appointmentId,
+                linked: !!linked,
+                confirmed,
+                queueNumber,
+                slotTime,
+                date,
+                patientName: `${form.firstName} ${form.lastName}`.trim(),
+                service: form.service,
+                doctor: form.doctorPreference === "No Preference" ? "Best available doctor" : form.doctorPreference,
+            });
             setForm(defaultForm);
             setSelectedDate("");
             setSelectedSlot(null);
@@ -292,52 +305,106 @@ export default function AppointmentsPageContent() {
             {/* ── Success Modal ── */}
             {successData && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy/60 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center animate-scale-in">
-                        <div className="w-20 h-20 rounded-full bg-green-50 border-4 border-green-100 flex items-center justify-center mx-auto mb-5">
-                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5">
-                                <polyline points="20 6 9 17 4 12" />
-                            </svg>
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 animate-scale-in overflow-y-auto max-h-[90vh]">
+
+                        {/* Header */}
+                        <div className="text-center mb-6">
+                            <div className="w-16 h-16 rounded-full bg-green-50 border-4 border-green-100 flex items-center justify-center mx-auto mb-4">
+                                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5">
+                                    <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                            </div>
+                            <h2 className="font-display text-2xl font-semibold text-navy">
+                                {successData.confirmed ? "Appointment Confirmed!" : "Appointment Requested!"}
+                            </h2>
+                            <p className="text-navy/50 text-sm mt-1">
+                                {successData.confirmed
+                                    ? "You're all set. See you at the clinic!"
+                                    : "We'll confirm within 2 hours via phone or email."}
+                            </p>
                         </div>
 
-                        <h2 className="font-display text-2xl font-semibold text-navy mb-2">
-                            {successData.confirmed ? "Appointment Confirmed!" : "Appointment Requested!"}
-                        </h2>
-
+                        {/* Queue badge */}
                         {successData.confirmed && successData.queueNumber && (
-                            <div className="inline-flex items-center gap-2 bg-gold/10 border border-gold/30 rounded-2xl px-5 py-3 mb-4">
-                                <div className="text-center">
-                                    <p className="text-xs text-navy/50 uppercase tracking-wider font-semibold">Your Queue Number</p>
-                                    <p className="font-fraunces text-4xl font-bold text-gold">#{successData.queueNumber}</p>
-                                    <p className="text-xs text-navy/40 mt-0.5">
-                                        {successData.slotTime} &middot; {new Date(successData.date + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-                                    </p>
+                            <div className="flex items-center justify-center gap-3 bg-gold/10 border border-gold/30 rounded-2xl px-5 py-3 mb-5">
+                                <div className="w-10 h-10 rounded-xl bg-gold/20 flex items-center justify-center flex-shrink-0">
+                                    <Icon name="QueueListIcon" size={18} className="text-gold" variant="solid" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] text-navy/40 uppercase tracking-wider font-semibold">Queue Number</p>
+                                    <p className="font-fraunces text-2xl font-bold text-gold leading-none">#{successData.queueNumber}</p>
+                                </div>
+                                <div className="w-px h-8 bg-gold/20 mx-1" />
+                                <div>
+                                    <p className="text-[10px] text-navy/40 uppercase tracking-wider font-semibold">Show on arrival</p>
+                                    <p className="text-sm text-navy font-semibold">{successData.slotTime}</p>
+                                    <p className="text-xs text-navy/50">{new Date(successData.date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}</p>
                                 </div>
                             </div>
                         )}
 
-                        <p className="text-navy/55 text-sm leading-relaxed mb-5">
-                            {successData.confirmed
-                                ? successData.linked
-                                    ? "Your appointment is confirmed and saved to your account."
-                                    : "Your appointment is confirmed! Show your queue number on arrival."
-                                : "We'll confirm your booking within 2 hours via phone or email."}
-                        </p>
-
-                        <div className="bg-cream rounded-xl px-4 py-3 mb-5 text-left">
-                            <p className="text-xs text-navy/40 uppercase tracking-wider font-semibold mb-1">Reference ID</p>
-                            <p className="text-navy font-mono text-sm font-semibold break-all">{successData.appointmentId}</p>
+                        {/* Booking summary */}
+                        <div className="bg-cream rounded-2xl divide-y divide-cream-dark mb-5">
+                            <div className="flex items-center gap-3 px-4 py-3">
+                                <div className="w-7 h-7 rounded-lg bg-navy/8 flex items-center justify-center flex-shrink-0">
+                                    <Icon name="UserIcon" size={14} className="text-navy/50" variant="solid" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-[10px] text-navy/40 uppercase tracking-wider font-semibold">Patient</p>
+                                    <p className="text-sm text-navy font-semibold truncate">{successData.patientName}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 px-4 py-3">
+                                <div className="w-7 h-7 rounded-lg bg-navy/8 flex items-center justify-center flex-shrink-0">
+                                    <Icon name="SparklesIcon" size={14} className="text-navy/50" variant="solid" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-[10px] text-navy/40 uppercase tracking-wider font-semibold">Service</p>
+                                    <p className="text-sm text-navy font-semibold truncate">{successData.service}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 px-4 py-3">
+                                <div className="w-7 h-7 rounded-lg bg-navy/8 flex items-center justify-center flex-shrink-0">
+                                    <Icon name="UserCircleIcon" size={14} className="text-navy/50" variant="solid" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-[10px] text-navy/40 uppercase tracking-wider font-semibold">Doctor</p>
+                                    <p className="text-sm text-navy font-semibold truncate">{successData.doctor}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 px-4 py-3">
+                                <div className="w-7 h-7 rounded-lg bg-navy/8 flex items-center justify-center flex-shrink-0">
+                                    <Icon name="CalendarDaysIcon" size={14} className="text-navy/50" variant="solid" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-[10px] text-navy/40 uppercase tracking-wider font-semibold">Date &amp; Time</p>
+                                    <p className="text-sm text-navy font-semibold">
+                                        {new Date(successData.date + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })} &middot; {successData.slotTime}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 px-4 py-3">
+                                <div className="w-7 h-7 rounded-lg bg-navy/8 flex items-center justify-center flex-shrink-0">
+                                    <Icon name="HashtagIcon" size={14} className="text-navy/50" variant="solid" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-[10px] text-navy/40 uppercase tracking-wider font-semibold">Booking Ref</p>
+                                    <p className="text-sm text-navy font-mono font-semibold tracking-wide">{successData.appointmentId.slice(-10).toUpperCase()}</p>
+                                </div>
+                            </div>
                         </div>
 
+                        {/* Guest CTA */}
                         {!successData.linked && (
-                            <div className="bg-gold/8 border border-gold/20 rounded-2xl p-4 mb-5 text-left">
+                            <div className="bg-gold/8 border border-gold/20 rounded-2xl p-4 mb-5">
                                 <div className="flex items-start gap-3">
                                     <div className="w-8 h-8 bg-gold/15 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                                         <Icon name="UserCircleIcon" size={16} className="text-gold" variant="solid" />
                                     </div>
                                     <div>
-                                        <p className="text-navy font-semibold text-sm mb-1">Want to track this appointment?</p>
+                                        <p className="text-navy font-semibold text-sm mb-1">Track this appointment</p>
                                         <p className="text-navy/55 text-xs leading-relaxed">
-                                            Create a free account and your appointment will be automatically linked.
+                                            Create a free account to view, manage and get reminders for your booking.
                                         </p>
                                     </div>
                                 </div>
@@ -348,14 +415,19 @@ export default function AppointmentsPageContent() {
                             </div>
                         )}
 
+                        {/* Action buttons */}
                         <div className="flex flex-col sm:flex-row items-center gap-3">
                             {successData.linked && (
-                                <button onClick={() => router.push("/dashboard/user/appointments")} className="w-full sm:flex-1 btn-primary py-3 rounded-xl text-sm font-semibold flex items-center justify-center">
+                                <button onClick={() => router.push("/dashboard/user/appointments")} className="w-full sm:flex-1 btn-primary py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
+                                    <Icon name="RectangleStackIcon" size={15} variant="solid" />
                                     <span>View in Dashboard</span>
                                 </button>
                             )}
-                            <button onClick={() => setSuccessData(null)} className={`${successData.linked ? "w-full sm:flex-1 border border-navy/20 text-navy hover:bg-navy/5 flex items-center justify-center" : "w-full btn-primary flex items-center justify-center"} py-3 rounded-xl text-sm font-semibold transition-colors`}>
-                                <span>{successData.linked ? "Close" : "Done"}</span>
+                            <button
+                                onClick={() => setSuccessData(null)}
+                                className={`${successData.linked ? "w-full sm:flex-1 border border-navy/20 text-navy hover:bg-navy/5" : "w-full btn-primary"} py-3 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center`}
+                            >
+                                {successData.linked ? "Close" : "Done"}
                             </button>
                         </div>
                     </div>

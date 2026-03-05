@@ -310,7 +310,10 @@ function RegisterForm() {
 
                     <p className="mt-8 text-center text-navy/50 text-sm">
                         Already have an account?{" "}
-                        <Link href="/auth/login" className="text-gold font-medium hover:underline">
+                        <Link
+                            href={searchParams.get("next") ? `/auth/login?next=${encodeURIComponent(searchParams.get("next")!)}` : "/auth/login"}
+                            className="text-gold font-medium hover:underline"
+                        >
                             Sign in
                         </Link>
                     </p>
