@@ -5,7 +5,9 @@ import type { Role } from "@/types/auth";
 export interface IUser extends Document {
     name: string;
     email: string;
-    password: string;
+    password?: string;
+    googleId?: string;
+    avatar?: string;
     role: Role;
     isActive: boolean;
     // Profile fields
@@ -43,10 +45,12 @@ const UserSchema = new Schema<IUser>(
         },
         password: {
             type: String,
-            required: [true, "Password is required"],
+            required: false,
             minlength: [6, "Password must be at least 6 characters"],
             select: false, // Never return password in queries
         },
+        googleId: { type: String, default: null, index: true },
+        avatar: { type: String, default: "" },
         role: {
             type: String,
             enum: ["user", "admin", "super_admin"],
@@ -74,7 +78,7 @@ const UserSchema = new Schema<IUser>(
 
 // ─── Hash password before saving ─────────────────────────
 UserSchema.pre("save", async function () {
-    if (!this.isModified("password")) return;
+    if (!this.password || !this.isModified("password")) return;
     const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);
 });
